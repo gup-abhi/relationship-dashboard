@@ -1,0 +1,7 @@
+node_modules
+*.pdf
+TODO.md
+
+# Environment variables
+.env
+backend/.env
