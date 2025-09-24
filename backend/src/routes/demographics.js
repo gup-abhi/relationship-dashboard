@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // GET /api/demographics/age
@@ -21,4 +21,4 @@ router.get('/relationship-length', (req, res) => {
   res.json({ message: 'Relationship duration analysis endpoint' });
 });
 
-module.exports = router;
+export default router;

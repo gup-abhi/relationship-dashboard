@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const overviewRoutes = require('./overview');
-const demographicRoutes = require('./demographics');
-const issuesRoutes = require('./issues');
-const sentimentRoutes = require('./sentiment');
-const trendsRoutes = require('./trends');
-const mongoose = require('mongoose');
+import overviewRoutes from './overview.js';
+import demographicRoutes from './demographics.js';
+import issuesRoutes from './issues.js';
+import sentimentRoutes from './sentiment.js';
+import trendsRoutes from './trends.js';
+import mongoose from 'mongoose';
 
 router.use('/overview', overviewRoutes);
 router.use('/demographics', demographicRoutes);
@@ -24,4 +24,4 @@ router.get('/health', (req, res) => {
     res.json({ db: dbStatusMap[dbStatus] });
 });
 
-module.exports = router;
+export default router;

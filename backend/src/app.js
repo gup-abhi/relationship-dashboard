@@ -1,9 +1,9 @@
-require('dotenv').config();
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const mainRouter = require('./routes');
-const connectDB = require('./config/db');
+import 'dotenv/config';
+import express from 'express';
+import morgan from 'morgan';
+import cors from 'cors';
+import mainRouter from './routes/index.js';
+import connectDB from './config/db.js';
 
 // Connect to Database
 connectDB();

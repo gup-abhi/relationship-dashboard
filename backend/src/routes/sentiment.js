@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // GET /api/sentiment/distribution
@@ -21,4 +21,4 @@ router.get('/urgency', (req, res) => {
   res.json({ message: 'Urgency level analysis endpoint' });
 });
 
-module.exports = router;
+export default router;

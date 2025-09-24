@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // GET /api/trends/volume
@@ -21,4 +21,4 @@ router.get('/predictions', (req, res) => {
   res.json({ message: 'Predictive analytics endpoint' });
 });
 
-module.exports = router;
+export default router;
