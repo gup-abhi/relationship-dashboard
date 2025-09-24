@@ -5,7 +5,18 @@ import Post from '../models/Post.js';
 // GET /api/issues/primary
 router.get('/primary', async (req, res) => {
   try {
+    const { relationship_stage, age_range_op } = req.query;
+    let matchStage = {};
+
+    if (relationship_stage) {
+      matchStage.relationship_stage = relationship_stage;
+    }
+    if (age_range_op) {
+      matchStage.age_range_op = age_range_op;
+    }
+
     const primaryIssues = await Post.aggregate([
+      { $match: matchStage },
       { $group: { _id: '$issue_category', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
     ]);
