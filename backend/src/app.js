@@ -18,6 +18,11 @@ app.use(morgan('dev'));
 // Routes
 app.use('/api', mainRouter);
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'UP' });
+});
+
 app.get('/', (req, res) => {
   res.send('Hello from the backend!');
 });
