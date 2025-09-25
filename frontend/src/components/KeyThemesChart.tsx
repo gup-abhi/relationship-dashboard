@@ -69,7 +69,6 @@ const KeyThemesChart: React.FC<KeyThemesChartProps> = ({ selectedStage, selected
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-3 mt-6">Key Themes</h2>
       {themes.length > 0 ? (
         <ResponsiveContainer width="100%" height={400}>
           <BarChart

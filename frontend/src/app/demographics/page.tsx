@@ -124,7 +124,7 @@ const DemographicsPage: React.FC = () => {
 
       <div className="mb-4 flex space-x-4 items-end">
         <div>
-          <label htmlFor="age-range-select" className="block text-sm font-medium text-gray-700">Filter by Age Range:</label>
+          <label htmlFor="age-range-select" className="block text-sm font-medium text-foreground">Filter by Age Range:</label>
           <Select onValueChange={setSelectedAgeRange} value={selectedAgeRange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select an age range" />
@@ -140,7 +140,7 @@ const DemographicsPage: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="gender-select" className="block text-sm font-medium text-gray-700">Filter by Gender:</label>
+          <label htmlFor="gender-select" className="block text-sm font-medium text-foreground">Filter by Gender:</label>
           <Select onValueChange={setSelectedGender} value={selectedGender}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select gender" />
@@ -156,7 +156,7 @@ const DemographicsPage: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="relationship-length-select" className="block text-sm font-medium text-gray-700">Filter by Relationship Length:</label>
+          <label htmlFor="relationship-length-select" className="block text-sm font-medium text-foreground">Filter by Relationship Length:</label>
           <Select onValueChange={setSelectedRelationshipLength} value={selectedRelationshipLength}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select length" />
@@ -172,7 +172,7 @@ const DemographicsPage: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-gray-700">Filter by Relationship Stage:</label>
+          <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-foreground">Filter by Relationship Stage:</label>
           <Select onValueChange={setSelectedRelationshipStage} value={selectedRelationshipStage}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select a stage" />
@@ -191,7 +191,7 @@ const DemographicsPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-4 shadow rounded-lg mb-6">
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-2">Age Distribution</h2>
           {ageDistribution && ageDistribution.length > 0 ? (
             <AgeDistributionBarChart data={ageDistribution} />
@@ -200,7 +200,7 @@ const DemographicsPage: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-white p-4 shadow rounded-lg mb-6">
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-2">Gender Distribution</h2>
           {genderDistribution && genderDistribution.length > 0 ? (
             <GenderDistributionDonutChart data={genderDistribution} />
@@ -209,7 +209,7 @@ const DemographicsPage: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-white p-4 shadow rounded-lg mb-6 col-span-full">
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-2">Relationship Length Distribution</h2>
           {relationshipLengthDistribution && relationshipLengthDistribution.length > 0 ? (
             <RelationshipLengthStackedBarChart data={relationshipLengthDistribution} />
@@ -218,21 +218,21 @@ const DemographicsPage: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-white p-4 shadow rounded-lg mb-6 col-span-full">
-          <h2 className="text-xl font-semibold mb-2">Relationship Stage Distribution</h2>
-          {relationshipStagesDistribution && relationshipStagesDistribution.length > 0 ? (
-            <RelationshipStagePieChart data={relationshipStagesDistribution} />
-          ) : (
-            <p>No relationship stage data available.</p>
-          )}
-        </div>
-
-        <div className="bg-white p-4 shadow rounded-lg mb-6 col-span-full">
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-2">Age vs Gender Cross-Tabulation</h2>
           {ageGenderCrossTabulation && ageGenderCrossTabulation.length > 0 ? (
             <CrossTabulationHeatmap data={ageGenderCrossTabulation} field1Name="Age Range" field2Name="Gender" />
           ) : (
             <p>No cross-tabulation data available.</p>
+          )}
+        </div>
+
+        <div className="bg-card p-4 shadow rounded-lg mb-6 col-span-full">
+          <h2 className="text-xl font-semibold mb-2">Relationship Stage Distribution</h2>
+          {relationshipStagesDistribution && relationshipStagesDistribution.length > 0 ? (
+            <RelationshipStagePieChart data={relationshipStagesDistribution} />
+          ) : (
+            <p>No relationship stage data available.</p>
           )}
         </div>
       </div>

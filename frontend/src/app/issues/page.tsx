@@ -156,7 +156,7 @@ const IssuesPage = () => {
 
       <div className="mb-4 flex space-x-4">
         <div>
-          <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-gray-700">Filter by Relationship Stage:</label>
+          <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-foreground">Filter by Relationship Stage:</label>
           <Select onValueChange={handleStageChange} value={selectedStage}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select a stage" />
@@ -172,7 +172,7 @@ const IssuesPage = () => {
         </div>
 
         <div>
-          <label htmlFor="age-range-select" className="block text-sm font-medium text-gray-700">Filter by Age Range:</label>
+          <label htmlFor="age-range-select" className="block text-sm font-medium text-foreground">Filter by Age Range:</label>
           <Select onValueChange={handleAgeRangeChange} value={selectedAgeRange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select an age range" />
@@ -190,38 +190,53 @@ const IssuesPage = () => {
         <Button onClick={handleClearFilters} className="mt-auto">Clear Filters</Button>
       </div>
 
-      <h2 className="text-xl font-semibold mb-3">Primary Issues</h2>
-      {primaryIssues.length > 0 ? (
-        <TopIssuesChart data={primaryIssues} title="Primary Issues" />
-      ) : (
-        <p>No primary issues found for the selected filters.</p>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
+          <h2 className="text-xl font-semibold mb-2">Primary Issues</h2>
+          {primaryIssues.length > 0 ? (
+            <TopIssuesChart data={primaryIssues} title="Primary Issues" />
+          ) : (
+            <p>No primary issues found for the selected filters.</p>
+          )}
+        </div>
 
-      <h2 className="text-xl font-semibold mb-3 mt-6">Secondary Issues</h2>
-      {secondaryIssues.length > 0 ? (
-        <SecondaryIssuesWordCloud data={secondaryIssues} />
-      ) : (
-        <p>No secondary issues found.</p>
-      )}
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
+          <h2 className="text-xl font-semibold mb-2">Secondary Issues</h2>
+          {secondaryIssues.length > 0 ? (
+            <SecondaryIssuesWordCloud data={secondaryIssues} />
+          ) : (
+            <p>No secondary issues found.</p>
+          )}
+        </div>
 
-      <h2 className="text-xl font-semibold mb-3 mt-6">Red Flags Frequency</h2>
-      {redFlags.length > 0 ? (
-        <TopIssuesChart data={redFlags} title="Red Flags" />
-      ) : (
-        <p>No red flags found.</p>
-      )}
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
+          <h2 className="text-xl font-semibold mb-2">Red Flags Frequency</h2>
+          {redFlags.length > 0 ? (
+            <TopIssuesChart data={redFlags} title="Red Flags" />
+          ) : (
+            <p>No red flags found.</p>
+          )}
+        </div>
 
-      <h2 className="text-xl font-semibold mb-3 mt-6">Positive Indicators</h2>
-      {positiveIndicators.length > 0 ? (
-        <TopIssuesChart data={positiveIndicators} title="Positive Indicators" />
-      ) : (
-        <p>No positive indicators found.</p>
-      )}
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
+          <h2 className="text-xl font-semibold mb-2">Positive Indicators</h2>
+          {positiveIndicators.length > 0 ? (
+            <TopIssuesChart data={positiveIndicators} title="Positive Indicators" />
+          ) : (
+            <p>No positive indicators found.</p>
+          )}
+        </div>
 
-      <h2 className="text-xl font-semibold mb-3 mt-6">Complexity Score Distribution</h2>
-      <ComplexityScoreHistogram relationshipStage={selectedStage} ageRangeOp={selectedAgeRange} />
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
+          <h2 className="text-xl font-semibold mb-2">Complexity Score Distribution</h2>
+          <ComplexityScoreHistogram relationshipStage={selectedStage} ageRangeOp={selectedAgeRange} />
+        </div>
 
-      <KeyThemesChart selectedStage={selectedStage} selectedAgeRange={selectedAgeRange} />
+        <div className="bg-card p-4 shadow rounded-lg mb-6">
+          <h2 className="text-xl font-semibold mb-2">Key Themes</h2>
+          <KeyThemesChart selectedStage={selectedStage} selectedAgeRange={selectedAgeRange} />
+        </div>
+      </div>
     </div>
   );
 };
