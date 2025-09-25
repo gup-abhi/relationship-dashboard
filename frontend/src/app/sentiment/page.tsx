@@ -7,6 +7,7 @@ import OverallSentimentPieChart from '@/components/OverallSentimentPieChart';
 import SentimentDistributionChart from '@/components/SentimentDistributionChart';
 import SentimentTrendsChart from '@/components/SentimentTrendsChart';
 import SentimentByDemographicsChart from '@/components/SentimentByDemographicsChart';
+import UrgencyLevelDistributionChart from '@/components/UrgencyLevelDistributionChart';
 import {
   Select,
   SelectContent,
@@ -32,6 +33,11 @@ interface SentimentByDemographicsData {
   count: number;
 }
 
+interface UrgencyLevelDistributionData {
+  _id: string;
+  count: number;
+}
+
 const fetchSentimentData = async (filters?: Record<string, string>): Promise<SentimentData[]> => {
   return api.get('/sentiment/distribution', { params: filters });
 };
@@ -44,6 +50,10 @@ const fetchSentimentTrends = async (filters?: Record<string, string>): Promise<S
 const fetchSentimentByDemographics = async (demographicField: string, filters?: Record<string, string>): Promise<SentimentByDemographicsData[]> => {
   const params = { ...filters, demographicField };
   return api.get('/sentiment/by-demographics', { params });
+};
+
+const fetchUrgencyLevelDistribution = async (filters?: Record<string, string>): Promise<UrgencyLevelDistributionData[]> => {
+  return api.get('/sentiment/urgency', { params: filters });
 };
 
 const fetchUniqueValues = async (field: string): Promise<string[]> => {
@@ -65,6 +75,7 @@ const SentimentPage: React.FC = () => {
   const { data: sentimentTrends, isLoading: trendsLoading, isError: trendsError } = useQuery<SentimentTrendData[]>({ queryKey: ['sentimentTrends', filters], queryFn: () => fetchSentimentTrends(filters) });
   const { data: sentimentByAge, isLoading: ageLoading, isError: ageError } = useQuery<SentimentByDemographicsData[]>({ queryKey: ['sentimentByAge', filters], queryFn: () => fetchSentimentByDemographics('age_range_op', filters) });
   const { data: sentimentByStage, isLoading: stageLoading, isError: stageError } = useQuery<SentimentByDemographicsData[]>({ queryKey: ['sentimentByStage', filters], queryFn: () => fetchSentimentByDemographics('relationship_stage', filters) });
+  const { data: urgencyLevelDistribution, isLoading: urgencyLoading, isError: urgencyError } = useQuery<UrgencyLevelDistributionData[]>({ queryKey: ['urgencyLevelDistribution', filters], queryFn: () => fetchUrgencyLevelDistribution(filters) });
 
   const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
   const { data: uniqueAgeRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => fetchUniqueValues('age-ranges') });
@@ -74,11 +85,11 @@ const SentimentPage: React.FC = () => {
     setSelectedAgeRange('all');
   };
 
-  if (isLoading || trendsLoading || ageLoading || stageLoading) {
+  if (isLoading || trendsLoading || ageLoading || stageLoading || urgencyLoading) {
     return <p>Loading sentiment data...</p>;
   }
 
-  if (isError || trendsError || ageError || stageError) {
+  if (isError || trendsError || ageError || stageError || urgencyError) {
     return <p className="text-red-500">Failed to fetch sentiment data</p>;
   }
 
@@ -165,6 +176,15 @@ const SentimentPage: React.FC = () => {
             <SentimentByDemographicsChart data={sentimentByStage} field1Name="Relationship Stage" />
           ) : (
             <p>No sentiment data available for this demographic.</p>
+          )}
+        </div>
+
+        <div className="bg-card p-4 shadow rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Urgency Level Distribution</h2>
+          {urgencyLevelDistribution && urgencyLevelDistribution.length > 0 ? (
+            <UrgencyLevelDistributionChart data={urgencyLevelDistribution} />
+          ) : (
+            <p>No urgency level data available.</p>
           )}
         </div>
       </div>

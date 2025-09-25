@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { getSentimentDistribution, getSentimentTrends, getSentimentByDemographics } from '../controllers/sentimentController.js';
+import { getSentimentDistribution, getSentimentTrends, getSentimentByDemographics, getUrgencyLevelDistribution } from '../controllers/sentimentController.js';
 
 // GET /api/sentiment/distribution
 router.get('/distribution', getSentimentDistribution);
@@ -12,8 +12,6 @@ router.get('/trends', getSentimentTrends);
 router.get('/by-demographics', getSentimentByDemographics);
 
 // GET /api/sentiment/urgency
-router.get('/urgency', (req, res) => {
-  res.json({ message: 'Urgency level analysis endpoint' });
-});
+router.get('/urgency', getUrgencyLevelDistribution);
 
 export default router;

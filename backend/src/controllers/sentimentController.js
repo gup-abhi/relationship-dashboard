@@ -1,5 +1,5 @@
 import Post from '../models/Post.js';
-import { getRecentTrends, getCrossTabulation } from '../services/aggregationService.js';
+import { getRecentTrends, getCrossTabulation, getPostsByField } from '../services/aggregationService.js';
 
 export const getSentimentDistribution = async (req, res) => {
   try {
@@ -49,6 +49,17 @@ export const getSentimentByDemographics = async (req, res) => {
       return res.status(400).json({ message: 'demographicField is required' });
     }
     const data = await getCrossTabulation(demographicField, 'post_sentiment', filters);
+    res.json(data);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+export const getUrgencyLevelDistribution = async (req, res) => {
+  try {
+    const filters = req.query;
+    const data = await getPostsByField('urgency_level', filters);
     res.json(data);
   } catch (err) {
     console.error(err.message);
