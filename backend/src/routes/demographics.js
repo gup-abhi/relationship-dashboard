@@ -1,15 +1,16 @@
 import express from 'express';
 import Post from '../models/Post.js';
+import { getPostsByField } from '../services/aggregationService.js';
 const router = express.Router();
 
 // GET /api/demographics/age-ranges
-router.get('/age-ranges', async (req, res) => {
+router.get('/age-ranges', async (req, res, next) => {
   try {
-    const ageRanges = await Post.distinct('age_range_op');
-    res.json(ageRanges);
+    const filters = req.query;
+    const ageDistribution = await getPostsByField('age_range_op', filters);
+    res.status(200).json({ ageDistribution });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    next(err);
   }
 });
 

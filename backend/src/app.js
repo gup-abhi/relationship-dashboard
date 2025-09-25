@@ -3,6 +3,7 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import mainRouter from './routes/index.js';
+import demographicsRouter from './routes/demographics.js';
 import connectDB from './config/db.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
@@ -18,6 +19,7 @@ app.use(morgan('dev'));
 
 // Routes
 app.use('/api', mainRouter);
+app.use('/api/demographics', demographicsRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

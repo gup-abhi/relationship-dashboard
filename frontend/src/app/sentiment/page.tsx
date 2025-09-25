@@ -35,7 +35,8 @@ const SentimentPage = () => {
         if (!ageRangesRes.ok) throw new Error(`HTTP error! status: ${ageRangesRes.status} for age ranges`);
 
         const stagesData: string[] = await stagesRes.json();
-        const ageRangesData: string[] = await ageRangesRes.json();
+        const ageRangesResponse = await ageRangesRes.json();
+        const ageRangesData: string[] = ageRangesResponse.ageDistribution.map((item: any) => item._id);
 
         setRelationshipStages(['all', ...stagesData]); // Add 'all' option for 'All'
         setAgeRanges(['all', ...ageRangesData]); // Add 'all' option for 'All'
