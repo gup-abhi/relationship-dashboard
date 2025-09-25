@@ -128,8 +128,28 @@ router.get('/themes', async (req, res) => {
 });
 
 // GET /api/issues/complexity
-router.get('/complexity', (req, res) => {
-  res.json({ message: 'Complexity score distribution endpoint' });
+router.get('/complexity', async (req, res) => {
+  try {
+    const { relationship_stage, age_range_op } = req.query;
+    const match = buildMatchStage({ relationship_stage, age_range_op });
+
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
+    }
+
+    pipeline.push(
+      { $match: { complexity_score: { $exists: true, $ne: null } } },
+      { $group: { _id: '$complexity_score', count: { $sum: 1 } } },
+      { $sort: { _id: -1 } },
+    );
+
+    const complexityDistribution = await Post.aggregate(pipeline);
+    res.json(complexityDistribution);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
 });
 
 export default router;

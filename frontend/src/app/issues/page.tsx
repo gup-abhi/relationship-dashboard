@@ -13,6 +13,7 @@ import { api, fetchMostCommonIssuesDistribution } from '@/lib/api';
 import TopIssuesChart from '@/components/TopIssuesChart';
 import SecondaryIssuesWordCloud from '@/components/SecondaryIssuesWordCloud';
 import KeyThemesChart from '@/components/KeyThemesChart';
+import ComplexityScoreHistogram from '@/components/ComplexityScoreHistogram';
 
 interface Issue {
   _id: string;
@@ -216,6 +217,9 @@ const IssuesPage = () => {
       ) : (
         <p>No positive indicators found.</p>
       )}
+
+      <h2 className="text-xl font-semibold mb-3 mt-6">Complexity Score Distribution</h2>
+      <ComplexityScoreHistogram relationshipStage={selectedStage} ageRangeOp={selectedAgeRange} />
 
       <KeyThemesChart selectedStage={selectedStage} selectedAgeRange={selectedAgeRange} />
     </div>
