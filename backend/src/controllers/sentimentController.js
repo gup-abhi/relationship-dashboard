@@ -1,29 +1,9 @@
-import Post from '../models/Post.js';
-import { getRecentTrends, getCrossTabulation, getPostsByField } from '../services/aggregationService.js';
+import { getRecentTrends, getCrossTabulation, getPostsByField, getSentimentDistribution as getSentimentDistributionService } from '../services/aggregationService.js';
 
 export const getSentimentDistribution = async (req, res) => {
   try {
-    const { relationship_stage, age_range_op } = req.query;
-    let matchStage = {};
-
-    if (relationship_stage) {
-      matchStage.relationship_stage = relationship_stage;
-    }
-    if (age_range_op) {
-      matchStage.age_range_op = age_range_op;
-    }
-
-    const sentimentDistribution = await Post.aggregate([
-      { $match: matchStage },
-      {
-        $project: {
-          sentiments: { $split: ["$post_sentiment", "|"] }
-        }
-      },
-      { $unwind: "$sentiments" },
-      { $group: { _id: '$sentiments', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ]);
+    const filters = req.query;
+    const sentimentDistribution = await getSentimentDistributionService(filters);
     res.json(sentimentDistribution);
   } catch (err) {
     console.error(err.message);

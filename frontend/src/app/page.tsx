@@ -57,7 +57,7 @@ export default function Home() {
             <h2 className="text-xl font-semibold mb-2">Sentiment Distribution</h2>
             {
               kpis.sentimentDistribution && kpis.sentimentDistribution.length > 0 ? (
-                <SentimentDistributionChart data={kpis.sentimentDistribution} />
+                <SentimentDistributionChart data={kpis.sentimentDistribution.map((item: any) => ({ name: item._id, value: item.count }))} />
               ) : (
                 <p>No sentiment data available.</p>
               )
