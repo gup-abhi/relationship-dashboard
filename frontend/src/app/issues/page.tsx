@@ -9,6 +9,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { api, fetchMostCommonIssuesDistribution } from '@/lib/api';
+import TopIssuesChart from '@/components/TopIssuesChart';
+import SecondaryIssuesWordCloud from '@/components/SecondaryIssuesWordCloud';
 
 interface Issue {
   _id: string;
@@ -17,6 +19,7 @@ interface Issue {
 
 const IssuesPage = () => {
   const [primaryIssues, setPrimaryIssues] = useState<Issue[]>([]);
+  const [secondaryIssues, setSecondaryIssues] = useState<Issue[]>([]);
   const [mostCommonIssues, setMostCommonIssues] = useState<Issue[]>([]);
   const [relationshipStages, setRelationshipStages] = useState<string[]>([]);
   const [ageRanges, setAgeRanges] = useState<string[]>([]);
@@ -75,8 +78,16 @@ const IssuesPage = () => {
         const primaryIssuesData: Issue[] = await primaryIssuesResponse.json();
         setPrimaryIssues(primaryIssuesData);
 
+        // Fetch secondary issues
+        const secondaryIssuesResponse = await fetch('/api/issues/secondary');
+        if (!secondaryIssuesResponse.ok) {
+          throw new Error(`HTTP error! status: ${secondaryIssuesResponse.status} for secondary issues`);
+        }
+        const secondaryIssuesData: Issue[] = await secondaryIssuesResponse.json();
+        setSecondaryIssues(secondaryIssuesData);
+
         // Fetch most common issues distribution
-        const mostCommonIssuesResponse = await fetchMostCommonIssuesDistribution();
+        const mostCommonIssuesResponse = await fetchMostCommonIssuesDistribution({ relationship_stage: selectedStage, age_range_op: selectedAgeRange });
         setMostCommonIssues(mostCommonIssuesResponse.mostCommonIssuesDistribution);
 
       } catch (err: any) {
@@ -145,15 +156,16 @@ const IssuesPage = () => {
 
       <h2 className="text-xl font-semibold mb-3">Primary Issues</h2>
       {primaryIssues.length > 0 ? (
-        <ul>
-          {primaryIssues.map((issue) => (
-            <li key={issue._id} className="mb-1">
-              {issue._id}: {issue.count}
-            </li>
-          ))}
-        </ul>
+        <TopIssuesChart data={primaryIssues} />
       ) : (
         <p>No primary issues found for the selected filters.</p>
+      )}
+
+      <h2 className="text-xl font-semibold mb-3 mt-6">Secondary Issues</h2>
+      {secondaryIssues.length > 0 ? (
+        <SecondaryIssuesWordCloud data={secondaryIssues} />
+      ) : (
+        <p>No secondary issues found.</p>
       )}
 
       <h2 className="text-xl font-semibold mb-3 mt-6">Most Common Issues (Overall)</h2>

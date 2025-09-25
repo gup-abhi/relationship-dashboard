@@ -18,7 +18,7 @@ interface TopIssuesChartProps {
 
 const TopIssuesChart: React.FC<TopIssuesChartProps> = ({ data }) => {
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width="100%" height={400}>
       <BarChart
         data={data}
         layout="vertical"
@@ -31,10 +31,10 @@ const TopIssuesChart: React.FC<TopIssuesChartProps> = ({ data }) => {
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis type="number" />
-        <YAxis dataKey="_id" type="category" width={100} />
+        <YAxis dataKey="_id" type="category" width={200} interval={0} />
         <Tooltip />
         <Legend />
-        <Bar dataKey="count" fill="#8884d8" name="Number of Issues" />
+        <Bar dataKey="count" fill="#8884d8" name="Number of Issues" barSize={20} />
       </BarChart>
     </ResponsiveContainer>
   );
