@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import PostVolumeTrendsChart from '@/components/PostVolumeTrendsChart';
 import {
   Select,
   SelectContent,
@@ -8,107 +11,64 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
-interface PostVolume {
+interface PostVolumeData {
   _id: string; // Date in YYYY-MM-DD format
   count: number;
 }
 
-const TrendsPage = () => {
-  const [postVolume, setPostVolume] = useState<PostVolume[]>([]);
-  const [relationshipStages, setRelationshipStages] = useState<string[]>([]);
-  const [ageRanges, setAgeRanges] = useState<string[]>([]);
+const fetchPostVolume = async (filters?: Record<string, string>): Promise<PostVolumeData[]> => {
+  const params = { ...filters, timeUnit: 'month' };
+  return api.get('/trends/volume', { params });
+};
+
+const fetchUniqueValues = async (field: string): Promise<string[]> => {
+  const response = await api.get<{ [key: string]: { _id: string }[] }>(`/demographics/${field}`);
+  const key = Object.keys(response)[0];
+  return ['all', ...response[key].map(item => item._id)];
+};
+
+const TrendsPage: React.FC = () => {
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [selectedAgeRange, setSelectedAgeRange] = useState<string>('all');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchFilters = async () => {
-      try {
-        const [stagesRes, ageRangesRes] = await Promise.all([
-          fetch('/api/demographics/relationship-stages'),
-          fetch('/api/demographics/age-ranges'),
-        ]);
-
-        if (!stagesRes.ok) throw new Error(`HTTP error! status: ${stagesRes.status} for stages`);
-        if (!ageRangesRes.ok) throw new Error(`HTTP error! status: ${ageRangesRes.status} for age ranges`);
-
-        const stagesData: string[] = await stagesRes.json();
-        const ageRangesData: string[] = await ageRangesRes.json();
-
-        setRelationshipStages(['all', ...stagesData]); // Add 'all' option for 'All'
-        setAgeRanges(['all', ...ageRangesData]); // Add 'all' option for 'All'
-      } catch (err: any) {
-        console.error("Failed to fetch filters:", err);
-        // setError(err.message); // Decide if you want to show this error to the user
-      }
-    };
-
-    fetchFilters();
-  }, []);
-
-  useEffect(() => {
-    const fetchPostVolume = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const queryParams = new URLSearchParams();
-        if (selectedStage !== 'all') {
-          queryParams.append('relationship_stage', selectedStage);
-        }
-        if (selectedAgeRange !== 'all') {
-          queryParams.append('age_range_op', selectedAgeRange);
-        }
-
-        const queryString = queryParams.toString();
-        const url = `/api/trends/volume${queryString ? `?${queryString}` : ''}`;
-
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data: PostVolume[] = await response.json();
-        setPostVolume(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPostVolume();
-  }, [selectedStage, selectedAgeRange]); // Re-fetch when selectedStage or selectedAgeRange changes
-
-  const handleStageChange = (value: string) => {
-    setSelectedStage(value);
+  const filters = {
+    ...(selectedStage !== 'all' && { relationship_stage: selectedStage }),
+    ...(selectedAgeRange !== 'all' && { age_range_op: selectedAgeRange }),
   };
 
-  const handleAgeRangeChange = (value: string) => {
-    setSelectedAgeRange(value);
+  const { data: postVolume, isLoading, isError } = useQuery<PostVolumeData[]>({ queryKey: ['postVolume', filters], queryFn: () => fetchPostVolume(filters) });
+
+  const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
+  const { data: uniqueAgeRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => fetchUniqueValues('age-ranges') });
+
+  const handleClearFilters = () => {
+    setSelectedStage('all');
+    setSelectedAgeRange('all');
   };
 
-  if (loading) {
-    return <div>Loading trends data...</div>;
+  if (isLoading) {
+    return <p>Loading trends data...</p>;
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
+  if (isError) {
+    return <p className="text-red-500">Failed to fetch trends data</p>;
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Trends</h1>
 
-      <div className="mb-4 flex space-x-4">
+      <div className="mb-4 flex space-x-4 items-end">
         <div>
-          <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-gray-700">Filter by Relationship Stage:</label>
-          <Select onValueChange={handleStageChange} value={selectedStage}>
+          <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-foreground">Filter by Relationship Stage:</label>
+          <Select onValueChange={setSelectedStage} value={selectedStage}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select a stage" />
             </SelectTrigger>
             <SelectContent>
-              {relationshipStages.map((stage) => (
+              {uniqueStages?.map((stage) => (
                 <SelectItem key={stage} value={stage}>
                   {stage === 'all' ? 'All Stages' : stage}
                 </SelectItem>
@@ -118,13 +78,13 @@ const TrendsPage = () => {
         </div>
 
         <div>
-          <label htmlFor="age-range-select" className="block text-sm font-medium text-gray-700">Filter by Age Range:</label>
-          <Select onValueChange={handleAgeRangeChange} value={selectedAgeRange}>
+          <label htmlFor="age-range-select" className="block text-sm font-medium text-foreground">Filter by Age Range:</label>
+          <Select onValueChange={setSelectedAgeRange} value={selectedAgeRange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select an age range" />
             </SelectTrigger>
             <SelectContent>
-              {ageRanges.map((range) => (
+              {uniqueAgeRanges?.map((range) => (
                 <SelectItem key={range} value={range}>
                   {range === 'all' ? 'All Age Ranges' : range}
                 </SelectItem>
@@ -132,20 +92,18 @@ const TrendsPage = () => {
             </SelectContent>
           </Select>
         </div>
+
+        <Button onClick={handleClearFilters} className="self-end">Clear All Filters</Button>
       </div>
 
-      <h2 className="text-xl font-semibold mb-3">Post Volume Over Time</h2>
-      {postVolume.length > 0 ? (
-        <ul>
-          {postVolume.map((volume) => (
-            <li key={volume._id} className="mb-1">
-              {volume._id}: {volume.count}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No post volume data found for the selected filters.</p>
-      )}
+      <div className="bg-card p-4 shadow rounded-lg">
+        <h2 className="text-xl font-semibold mb-2">Post Volume Over Time</h2>
+        {postVolume && postVolume.length > 0 ? (
+          <PostVolumeTrendsChart data={postVolume} />
+        ) : (
+          <p>No post volume data found for the selected filters.</p>
+        )}
+      </div>
     </div>
   );
 };
