@@ -8,9 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button'; // Assuming Button component exists
 import { api, fetchMostCommonIssuesDistribution } from '@/lib/api';
 import TopIssuesChart from '@/components/TopIssuesChart';
 import SecondaryIssuesWordCloud from '@/components/SecondaryIssuesWordCloud';
+import KeyThemesChart from '@/components/KeyThemesChart';
 
 interface Issue {
   _id: string;
@@ -20,7 +22,9 @@ interface Issue {
 const IssuesPage = () => {
   const [primaryIssues, setPrimaryIssues] = useState<Issue[]>([]);
   const [secondaryIssues, setSecondaryIssues] = useState<Issue[]>([]);
-  const [mostCommonIssues, setMostCommonIssues] = useState<Issue[]>([]);
+  const [redFlags, setRedFlags] = useState<Issue[]>([]);
+  const [positiveIndicators, setPositiveIndicators] = useState<Issue[]>([]);
+  const [keyThemes, setKeyThemes] = useState<Issue[]>([]);
   const [relationshipStages, setRelationshipStages] = useState<string[]>([]);
   const [ageRanges, setAgeRanges] = useState<string[]>([]);
   const [selectedStage, setSelectedStage] = useState<string>('all');
@@ -39,7 +43,8 @@ const IssuesPage = () => {
         if (!stagesRes.ok) throw new Error(`HTTP error! status: ${stagesRes.status} for stages`);
         if (!ageRangesRes.ok) throw new Error(`HTTP error! status: ${ageRangesRes.status} for age ranges`);
 
-        const stagesData: string[] = await stagesRes.json();
+        const stagesResponse = await stagesRes.json();
+        const stagesData: string[] = stagesResponse.relationshipStagesDistribution.map((item: any) => item._id);
         const ageRangesResponse = await ageRangesRes.json();
         const ageRangesData: string[] = ageRangesResponse.ageDistribution.map((item: any) => item._id);
 
@@ -59,19 +64,18 @@ const IssuesPage = () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch primary issues
-        const queryParams = new URLSearchParams();
+        const commonQueryParams = new URLSearchParams();
         if (selectedStage !== 'all') {
-          queryParams.append('relationship_stage', selectedStage);
+          commonQueryParams.append('relationship_stage', selectedStage);
         }
         if (selectedAgeRange !== 'all') {
-          queryParams.append('age_range_op', selectedAgeRange);
+          commonQueryParams.append('age_range_op', selectedAgeRange);
         }
+        const commonQueryString = commonQueryParams.toString();
 
-        const queryString = queryParams.toString();
-        const url = `/api/issues/primary${queryString ? `?${queryString}` : ''}`;
-
-        const primaryIssuesResponse = await fetch(url);
+        // Fetch primary issues
+        const primaryIssuesUrl = `/api/issues/primary${commonQueryString ? `?${commonQueryString}` : ''}`;
+        const primaryIssuesResponse = await fetch(primaryIssuesUrl);
         if (!primaryIssuesResponse.ok) {
           throw new Error(`HTTP error! status: ${primaryIssuesResponse.status} for primary issues`);
         }
@@ -79,16 +83,40 @@ const IssuesPage = () => {
         setPrimaryIssues(primaryIssuesData);
 
         // Fetch secondary issues
-        const secondaryIssuesResponse = await fetch('/api/issues/secondary');
+        const secondaryIssuesUrl = `/api/issues/secondary${commonQueryString ? `?${commonQueryString}` : ''}`;
+        const secondaryIssuesResponse = await fetch(secondaryIssuesUrl);
         if (!secondaryIssuesResponse.ok) {
           throw new Error(`HTTP error! status: ${secondaryIssuesResponse.status} for secondary issues`);
         }
         const secondaryIssuesData: Issue[] = await secondaryIssuesResponse.json();
         setSecondaryIssues(secondaryIssuesData);
 
-        // Fetch most common issues distribution
-        const mostCommonIssuesResponse = await fetchMostCommonIssuesDistribution({ relationship_stage: selectedStage, age_range_op: selectedAgeRange });
-        setMostCommonIssues(mostCommonIssuesResponse.mostCommonIssuesDistribution);
+        // Fetch red flags
+        const redFlagsUrl = `/api/issues/red-flags${commonQueryString ? `?${commonQueryString}` : ''}`;
+        const redFlagsResponse = await fetch(redFlagsUrl);
+        if (!redFlagsResponse.ok) {
+          throw new Error(`HTTP error! status: ${redFlagsResponse.status} for red flags`);
+        }
+        const redFlagsData: Issue[] = await redFlagsResponse.json();
+        setRedFlags(redFlagsData);
+
+        // Fetch positive indicators
+        const positiveIndicatorsUrl = `/api/issues/positive-indicators${commonQueryString ? `?${commonQueryString}` : ''}`;
+        const positiveIndicatorsResponse = await fetch(positiveIndicatorsUrl);
+        if (!positiveIndicatorsResponse.ok) {
+          throw new Error(`HTTP error! status: ${positiveIndicatorsResponse.status} for positive indicators`);
+        }
+        const positiveIndicatorsData: Issue[] = await positiveIndicatorsResponse.json();
+        setPositiveIndicators(positiveIndicatorsData);
+
+        // Fetch key themes
+        const keyThemesUrl = `/api/issues/themes${commonQueryString ? `?${commonQueryString}` : ''}`;
+        const keyThemesResponse = await fetch(keyThemesUrl);
+        if (!keyThemesResponse.ok) {
+          throw new Error(`HTTP error! status: ${keyThemesResponse.status} for key themes`);
+        }
+        const keyThemesData: Issue[] = await keyThemesResponse.json();
+        setKeyThemes(keyThemesData);
 
       } catch (err: any) {
         setError(err.message);
@@ -106,6 +134,11 @@ const IssuesPage = () => {
 
   const handleAgeRangeChange = (value: string) => {
     setSelectedAgeRange(value);
+  };
+
+  const handleClearFilters = () => {
+    setSelectedStage('all');
+    setSelectedAgeRange('all');
   };
 
   if (loading) {
@@ -152,11 +185,13 @@ const IssuesPage = () => {
             </SelectContent>
           </Select>
         </div>
+
+        <Button onClick={handleClearFilters} className="mt-auto">Clear Filters</Button>
       </div>
 
       <h2 className="text-xl font-semibold mb-3">Primary Issues</h2>
       {primaryIssues.length > 0 ? (
-        <TopIssuesChart data={primaryIssues} />
+        <TopIssuesChart data={primaryIssues} title="Primary Issues" />
       ) : (
         <p>No primary issues found for the selected filters.</p>
       )}
@@ -168,18 +203,21 @@ const IssuesPage = () => {
         <p>No secondary issues found.</p>
       )}
 
-      <h2 className="text-xl font-semibold mb-3 mt-6">Most Common Issues (Overall)</h2>
-      {mostCommonIssues.length > 0 ? (
-        <ul>
-          {mostCommonIssues.map((issue) => (
-            <li key={issue._id} className="mb-1">
-              {issue._id}: {issue.count}
-            </li>
-          ))}
-        </ul>
+      <h2 className="text-xl font-semibold mb-3 mt-6">Red Flags Frequency</h2>
+      {redFlags.length > 0 ? (
+        <TopIssuesChart data={redFlags} title="Red Flags" />
       ) : (
-        <p>No overall common issues data available.</p>
+        <p>No red flags found.</p>
       )}
+
+      <h2 className="text-xl font-semibold mb-3 mt-6">Positive Indicators</h2>
+      {positiveIndicators.length > 0 ? (
+        <TopIssuesChart data={positiveIndicators} title="Positive Indicators" />
+      ) : (
+        <p>No positive indicators found.</p>
+      )}
+
+      <KeyThemesChart selectedStage={selectedStage} selectedAgeRange={selectedAgeRange} />
     </div>
   );
 };

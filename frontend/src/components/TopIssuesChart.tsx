@@ -14,9 +14,10 @@ import {
 
 interface TopIssuesChartProps {
   data: Array<{ _id: string; count: number }>;
+  title: string;
 }
 
-const TopIssuesChart: React.FC<TopIssuesChartProps> = ({ data }) => {
+const TopIssuesChart: React.FC<TopIssuesChartProps> = ({ data, title }) => {
   return (
     <ResponsiveContainer width="100%" height={400}>
       <BarChart
@@ -34,7 +35,7 @@ const TopIssuesChart: React.FC<TopIssuesChartProps> = ({ data }) => {
         <YAxis dataKey="_id" type="category" width={200} interval={0} />
         <Tooltip />
         <Legend />
-        <Bar dataKey="count" fill="#8884d8" name="Number of Issues" barSize={20} />
+        <Bar dataKey="count" fill="#8884d8" name={title} barSize={20} />
       </BarChart>
     </ResponsiveContainer>
   );
