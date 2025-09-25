@@ -192,6 +192,36 @@ const getRecentTrends = async (timeUnit = 'day', dateField = 'created_date', fil
   }
 };
 
+const getTrendingTopics = async (filters = {}) => {
+  try {
+    const match = buildMatchStage(filters);
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
+    }
+    pipeline.push(
+      {
+        $project: {
+          themes: { $split: ["$key_themes", ";"] }
+        }
+      },
+      { $unwind: "$themes" },
+      {
+        $group: {
+          _id: { $trim: { input: "$themes" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    );
+    const result = await Post.aggregate(pipeline);
+    return result;
+  } catch (error) {
+    throw new Error(`Error fetching trending topics: ${error.message}`);
+  }
+};
+
 export {
   getPostsCount,
   getPostsByField,
@@ -202,4 +232,5 @@ export {
   getMostCommonIssuesDistribution,
   getTopIssues,
   getRecentTrends,
+  getTrendingTopics,
 };

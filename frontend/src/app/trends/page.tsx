@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import PostVolumeTrendsChart from '@/components/PostVolumeTrendsChart';
+import TrendingTopicsChart from '@/components/TrendingTopicsChart'; // Import the new component
 import {
   Select,
   SelectContent,
@@ -18,9 +19,18 @@ interface PostVolumeData {
   count: number;
 }
 
+interface TrendingTopicsData {
+  _id: string; // Topic
+  count: number;
+}
+
 const fetchPostVolume = async (filters?: Record<string, string>): Promise<PostVolumeData[]> => {
   const params = { ...filters, timeUnit: 'month' };
   return api.get('/trends/volume', { params });
+};
+
+const fetchTrendingTopics = async (filters?: Record<string, string>): Promise<TrendingTopicsData[]> => {
+  return api.get('/trends/topics', { params: filters });
 };
 
 const fetchUniqueValues = async (field: string): Promise<string[]> => {
@@ -38,7 +48,9 @@ const TrendsPage: React.FC = () => {
     ...(selectedAgeRange !== 'all' && { age_range_op: selectedAgeRange }),
   };
 
-  const { data: postVolume, isLoading, isError } = useQuery<PostVolumeData[]>({ queryKey: ['postVolume', filters], queryFn: () => fetchPostVolume(filters) });
+  const { data: postVolume, isLoading: isLoadingPostVolume, isError: isErrorPostVolume } = useQuery<PostVolumeData[]>({ queryKey: ['postVolume', filters], queryFn: () => fetchPostVolume(filters) });
+  const { data: trendingTopics, isLoading: isLoadingTrendingTopics, isError: isErrorTrendingTopics } = useQuery<TrendingTopicsData[]>({ queryKey: ['trendingTopics', filters], queryFn: () => fetchTrendingTopics(filters) });
+
 
   const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
   const { data: uniqueAgeRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => fetchUniqueValues('age-ranges') });
@@ -48,11 +60,11 @@ const TrendsPage: React.FC = () => {
     setSelectedAgeRange('all');
   };
 
-  if (isLoading) {
+  if (isLoadingPostVolume || isLoadingTrendingTopics) {
     return <p>Loading trends data...</p>;
   }
 
-  if (isError) {
+  if (isErrorPostVolume || isErrorTrendingTopics) {
     return <p className="text-red-500">Failed to fetch trends data</p>;
   }
 
@@ -96,12 +108,21 @@ const TrendsPage: React.FC = () => {
         <Button onClick={handleClearFilters} className="self-end">Clear All Filters</Button>
       </div>
 
-      <div className="bg-card p-4 shadow rounded-lg">
+      <div className="bg-card p-4 shadow rounded-lg mb-4">
         <h2 className="text-xl font-semibold mb-2">Post Volume Over Time</h2>
         {postVolume && postVolume.length > 0 ? (
           <PostVolumeTrendsChart data={postVolume} />
         ) : (
           <p>No post volume data found for the selected filters.</p>
+        )}
+      </div>
+
+      <div className="bg-card p-4 shadow rounded-lg">
+        <h2 className="text-xl font-semibold mb-2">Trending Topics</h2>
+        {trendingTopics && trendingTopics.length > 0 ? (
+          <TrendingTopicsChart data={trendingTopics} />
+        ) : (
+          <p>No trending topics data found for the selected filters.</p>
         )}
       </div>
     </div>

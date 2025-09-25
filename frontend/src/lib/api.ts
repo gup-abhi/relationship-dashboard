@@ -56,3 +56,6 @@ export const fetchTopIssues = (limit: number = 5, filters?: Record<string, strin
 
 export const fetchRecentTrends = (timeUnit: string = 'day', dateField: string = 'created_date', filters?: Record<string, string>) =>
   api.get<{ recentTrends: Array<{ _id: string; count: number }> }>('/overview/recent-trends', { params: { timeUnit, dateField, ...filters } });
+
+export const fetchTrendingTopics = (filters?: Record<string, string>) =>
+  api.get<Array<{ _id: string; count: number }>>('/trends/topics', { params: filters });
