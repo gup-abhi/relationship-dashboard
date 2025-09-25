@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import mainRouter from './routes/index.js';
 import connectDB from './config/db.js';
+import { errorHandler } from './middleware/errorMiddleware.js';
 
 // Connect to Database
 connectDB();
@@ -28,6 +29,8 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
