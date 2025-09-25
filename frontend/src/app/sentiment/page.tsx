@@ -73,22 +73,22 @@ const SentimentPage: React.FC = () => {
     ...(selectedAgeRange !== 'all' && { age_range_op: selectedAgeRange }),
   };
 
-  const { data: sentimentData, isLoading, isError } = useQuery<SentimentData[]>({ queryKey: ['sentimentData', filters], queryFn: () => fetchSentimentData(filters) });
-  const { data: sentimentTrends, isLoading: trendsLoading, isError: trendsError } = useQuery<SentimentTrendData[]>({ queryKey: ['sentimentTrends', filters], queryFn: () => fetchSentimentTrends(filters) });
-  const { data: sentimentByAge, isLoading: ageLoading, isError: ageError } = useQuery<SentimentByDemographicsData[]>({ queryKey: ['sentimentByAge', filters], queryFn: () => fetchSentimentByDemographics('age_range_op', filters) });
-  const { data: sentimentByStage, isLoading: stageLoading, isError: stageError } = useQuery<SentimentByDemographicsData[]>({ queryKey: ['sentimentByStage', filters], queryFn: () => fetchSentimentByDemographics('relationship_stage', filters) });
-  const { data: urgencyLevelDistribution, isLoading: urgencyLoading, isError: urgencyError } = useQuery<UrgencyLevelDistributionData[]>({ queryKey: ['urgencyLevelDistribution', filters], queryFn: () => fetchUrgencyLevelDistribution(filters) });
+  const { data: sentimentData, isFetching, isError } = useQuery<SentimentData[]>({ queryKey: ['sentimentData', filters], queryFn: () => fetchSentimentData(filters) });
+  const { data: sentimentTrends, isFetching: trendsFetching, isError: trendsError } = useQuery<SentimentTrendData[]>({ queryKey: ['sentimentTrends', filters], queryFn: () => fetchSentimentTrends(filters) });
+  const { data: sentimentByAge, isFetching: ageFetching, isError: ageError } = useQuery<SentimentByDemographicsData[]>({ queryKey: ['sentimentByAge', filters], queryFn: () => fetchSentimentByDemographics('age_range_op', filters) });
+  const { data: sentimentByStage, isFetching: stageFetching, isError: stageError } = useQuery<SentimentByDemographicsData[]>({ queryKey: ['sentimentByStage', filters], queryFn: () => fetchSentimentByDemographics('relationship_stage', filters) });
+  const { data: urgencyLevelDistribution, isFetching: urgencyFetching, isError: urgencyError } = useQuery<UrgencyLevelDistributionData[]>({ queryKey: ['urgencyLevelDistribution', filters], queryFn: () => fetchUrgencyLevelDistribution(filters) });
 
   const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
   const { data: uniqueAgeRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => fetchUniqueValues('age-ranges') });
 
   useEffect(() => {
-    if (isLoading || trendsLoading || ageLoading || stageLoading || urgencyLoading) {
+    if (isFetching || trendsFetching || ageFetching || stageFetching || urgencyFetching) {
       showLoader();
     } else {
       hideLoader();
     }
-  }, [isLoading, trendsLoading, ageLoading, stageLoading, urgencyLoading, showLoader, hideLoader]);
+  }, [isFetching, trendsFetching, ageFetching, stageFetching, urgencyFetching, showLoader, hideLoader]);
 
   const handleClearFilters = () => {
     setSelectedStage('all');
@@ -103,7 +103,7 @@ const SentimentPage: React.FC = () => {
     <div>
       <h1 className="text-2xl font-bold mb-4">Sentiment Analysis</h1>
 
-      <div className="mb-4 flex space-x-4 items-end">
+      <div className="mb-4 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 md:items-end">
         <div>
           <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-foreground">Filter by Relationship Stage:</label>
           <Select onValueChange={setSelectedStage} value={selectedStage}>

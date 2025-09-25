@@ -128,7 +128,7 @@ const DemographicsPage: React.FC = () => {
     <div>
       <h1 className="text-2xl font-bold mb-4">Demographics Overview</h1>
 
-      <div className="mb-4 flex space-x-4 items-end">
+      <div className="mb-4 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 md:items-end">
         <div>
           <label htmlFor="age-range-select" className="block text-sm font-medium text-foreground">Filter by Age Range:</label>
           <Select onValueChange={setSelectedAgeRange} value={selectedAgeRange}>

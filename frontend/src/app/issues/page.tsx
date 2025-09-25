@@ -32,22 +32,22 @@ const IssuesPage = () => {
     ...(selectedAgeRange !== 'all' && { age_range_op: selectedAgeRange }),
   };
 
-  const { data: primaryIssues, isLoading: primaryIssuesLoading, isError: primaryIssuesError } = useQuery<Issue[]>({ queryKey: ['primaryIssues', filters], queryFn: () => fetchPrimaryIssues(filters) });
-  const { data: secondaryIssues, isLoading: secondaryIssuesLoading, isError: secondaryIssuesError } = useQuery<Issue[]>({ queryKey: ['secondaryIssues', filters], queryFn: () => fetchSecondaryIssues(filters) });
-  const { data: redFlags, isLoading: redFlagsLoading, isError: redFlagsError } = useQuery<Issue[]>({ queryKey: ['redFlags', filters], queryFn: () => fetchRedFlags(filters) });
-  const { data: positiveIndicators, isLoading: positiveIndicatorsLoading, isError: positiveIndicatorsError } = useQuery<Issue[]>({ queryKey: ['positiveIndicators', filters], queryFn: () => fetchPositiveIndicators(filters) });
-  const { data: keyThemes, isLoading: keyThemesLoading, isError: keyThemesError } = useQuery<Issue[]>({ queryKey: ['keyThemes', filters], queryFn: () => fetchKeyThemes(filters) });
+  const { data: primaryIssues, isFetching: primaryIssuesFetching, isError: primaryIssuesError } = useQuery<Issue[]>({ queryKey: ['primaryIssues', filters], queryFn: () => fetchPrimaryIssues(filters) });
+  const { data: secondaryIssues, isFetching: secondaryIssuesFetching, isError: secondaryIssuesError } = useQuery<Issue[]>({ queryKey: ['secondaryIssues', filters], queryFn: () => fetchSecondaryIssues(filters) });
+  const { data: redFlags, isFetching: redFlagsFetching, isError: redFlagsError } = useQuery<Issue[]>({ queryKey: ['redFlags', filters], queryFn: () => fetchRedFlags(filters) });
+  const { data: positiveIndicators, isFetching: positiveIndicatorsFetching, isError: positiveIndicatorsError } = useQuery<Issue[]>({ queryKey: ['positiveIndicators', filters], queryFn: () => fetchPositiveIndicators(filters) });
+  const { data: keyThemes, isFetching: keyThemesFetching, isError: keyThemesError } = useQuery<Issue[]>({ queryKey: ['keyThemes', filters], queryFn: () => fetchKeyThemes(filters) });
 
   const { data: relationshipStages } = useQuery<string[]>({ queryKey: ['uniqueRelationshipStages'], queryFn: () => api.get<{ relationshipStagesDistribution: { _id: string }[] }>('/demographics/relationship-stages').then(res => ['all', ...res.relationshipStagesDistribution.map(item => item._id)]) });
   const { data: ageRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => api.get<{ ageDistribution: { _id: string }[] }>('/demographics/age-ranges').then(res => ['all', ...res.ageDistribution.map(item => item._id)]) });
 
   useEffect(() => {
-    if (primaryIssuesLoading || secondaryIssuesLoading || redFlagsLoading || positiveIndicatorsLoading || keyThemesLoading) {
+    if (primaryIssuesFetching || secondaryIssuesFetching || redFlagsFetching || positiveIndicatorsFetching || keyThemesFetching) {
       showLoader();
     } else {
       hideLoader();
     }
-  }, [primaryIssuesLoading, secondaryIssuesLoading, redFlagsLoading, positiveIndicatorsLoading, keyThemesLoading, showLoader, hideLoader]);
+  }, [primaryIssuesFetching, secondaryIssuesFetching, redFlagsFetching, positiveIndicatorsFetching, keyThemesFetching, showLoader, hideLoader]);
 
   const handleStageChange = (value: string) => {
     setSelectedStage(value);
@@ -70,7 +70,7 @@ const IssuesPage = () => {
     <div>
       <h1 className="text-2xl font-bold mb-4">Issues & Themes</h1>
 
-      <div className="mb-4 flex space-x-4">
+      <div className="mb-4 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 md:items-end">
         <div>
           <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-foreground">Filter by Relationship Stage:</label>
           <Select onValueChange={handleStageChange} value={selectedStage}>

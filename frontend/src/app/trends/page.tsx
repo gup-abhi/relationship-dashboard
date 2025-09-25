@@ -78,7 +78,7 @@ const TrendsPage: React.FC = () => {
     <div>
       <h1 className="text-2xl font-bold mb-4">Trends</h1>
 
-      <div className="mb-4 flex space-x-4 items-end">
+      <div className="mb-4 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 md:items-end">
         <div>
           <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-foreground">Filter by Relationship Stage:</label>
           <Select onValueChange={setSelectedStage} value={selectedStage}>
