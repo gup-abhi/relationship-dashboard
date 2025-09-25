@@ -18,7 +18,7 @@ export default function TrendingTopicsChart({ data }: TrendingTopicsChartProps) 
       <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis type="number" />
-        <YAxis dataKey="_id" type="category" interval={0} width={300} />
+        <YAxis dataKey="_id" type="category" interval={0} width={220} />
         <Tooltip content={<CustomTooltip />} />
         <Legend />
         <Bar dataKey="count" fill="#8884d8">

@@ -77,13 +77,13 @@ const KeyThemesChart: React.FC<KeyThemesChartProps> = ({ selectedStage, selected
             margin={{
               top: 20,
               right: 30,
-              left: 80,
+              left: 20,
               bottom: 5,
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" />
-            <YAxis dataKey="_id" type="category" width={200} interval={0} />
+            <YAxis dataKey="_id" type="category" width={150} interval={0} />
             <Tooltip />
             <Legend />
             <Bar dataKey="count" fill="#8884d8" name="Key Themes" barSize={20} />

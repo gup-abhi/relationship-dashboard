@@ -27,16 +27,17 @@ const TopIssuesChart: React.FC<TopIssuesChartProps> = ({ data, title }) => {
         margin={{
           top: 20,
           right: 30,
-          left: 80,
+          left: 20,
           bottom: 5,
         }}
+        barCategoryGap="25%"
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis type="number" />
-        <YAxis dataKey="_id" type="category" width={200} interval={0} />
+        <YAxis dataKey="_id" type="category" width={180} interval={0} />
         <Tooltip content={<CustomTooltip />} />
         <Legend />
-        <Bar dataKey="count" fill="#8884d8" name={title} barSize={20} />
+        <Bar dataKey="count" fill="#8884d8" name={title} />
       </BarChart>
     </ResponsiveContainer>
   );
