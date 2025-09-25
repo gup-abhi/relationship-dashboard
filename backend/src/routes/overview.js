@@ -1,7 +1,19 @@
 import express from 'express';
 import Post from '../models/Post.js';
-import { getPostsCount, getMostCommonIssues } from '../services/aggregationService.js';
-import { getTotalPostsCount, getMostCommonIssuesController } from '../controllers/overviewController.js';
+import {
+  getPostsCount,
+  getMostCommonIssues,
+  getAverageComplexityScore,
+  getSentimentDistribution,
+  getMostCommonIssuesDistribution,
+} from '../services/aggregationService.js';
+import {
+  getTotalPostsCount,
+  getMostCommonIssuesController,
+  getAverageComplexityScoreController,
+  getSentimentDistributionController,
+  getMostCommonIssuesDistributionController,
+} from '../controllers/overviewController.js';
 
 const router = express.Router();
 
@@ -11,25 +23,31 @@ router.get('/total-posts', getTotalPostsCount);
 // GET /api/overview/most-common-issues
 router.get('/most-common-issues', getMostCommonIssuesController);
 
+// GET /api/overview/average-complexity
+router.get('/average-complexity', getAverageComplexityScoreController);
+
+// GET /api/overview/sentiment-distribution
+router.get('/sentiment-distribution', getSentimentDistributionController);
+
+// GET /api/overview/most-common-issues-distribution
+router.get('/most-common-issues-distribution', getMostCommonIssuesDistributionController);
+
 // GET /api/overview/kpis
 router.get('/kpis', async (req, res, next) => {
   try {
-    const totalPosts = await getPostsCount();
-    const mostCommonIssue = await getMostCommonIssues();
-
-    const averageComplexity = await Post.aggregate([
-      { $group: { _id: null, avgComplexity: { $avg: '$complexity_score' } } },
-    ]);
-
-    const sentimentDistribution = await Post.aggregate([
-      { $group: { _id: '$post_sentiment', count: { $sum: 1 } } },
-    ]);
+    const filters = req.query; // Extract filters from query parameters
+    const totalPosts = await getPostsCount(filters);
+    const mostCommonIssue = await getMostCommonIssues(filters);
+    const averageComplexity = await getAverageComplexityScore(filters);
+    const sentimentDistribution = await getSentimentDistribution(filters);
+    const mostCommonIssuesDistribution = await getMostCommonIssuesDistribution(filters);
 
     const kpis = {
       totalPosts,
       mostCommonIssue: mostCommonIssue,
-      averageComplexity: averageComplexity[0].avgComplexity,
+      averageComplexity,
       sentimentDistribution,
+      mostCommonIssuesDistribution,
     };
 
     res.json(kpis);

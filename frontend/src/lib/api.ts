@@ -41,3 +41,12 @@ export const api = {
   delete: <T>(endpoint: string, options?: RequestOptions) =>
     apiRequest<T>(endpoint, { method: 'DELETE', ...options }),
 };
+
+export const fetchAverageComplexityScore = () =>
+  api.get<{ averageComplexity: number }>('/overview/average-complexity');
+
+export const fetchSentimentDistribution = () =>
+  api.get<{ sentimentDistribution: Array<{ _id: string; count: number }> }>('/overview/sentiment-distribution');
+
+export const fetchMostCommonIssuesDistribution = () =>
+  api.get<{ mostCommonIssuesDistribution: Array<{ _id: string; count: number }> }>('/overview/most-common-issues-distribution');

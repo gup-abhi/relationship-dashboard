@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { api, fetchMostCommonIssuesDistribution } from '@/lib/api';
 
 interface Issue {
   _id: string;
@@ -16,6 +17,7 @@ interface Issue {
 
 const IssuesPage = () => {
   const [primaryIssues, setPrimaryIssues] = useState<Issue[]>([]);
+  const [mostCommonIssues, setMostCommonIssues] = useState<Issue[]>([]);
   const [relationshipStages, setRelationshipStages] = useState<string[]>([]);
   const [ageRanges, setAgeRanges] = useState<string[]>([]);
   const [selectedStage, setSelectedStage] = useState<string>('all');
@@ -49,10 +51,11 @@ const IssuesPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchPrimaryIssues = async () => {
+    const fetchIssueData = async () => {
       setLoading(true);
       setError(null);
       try {
+        // Fetch primary issues
         const queryParams = new URLSearchParams();
         if (selectedStage !== 'all') {
           queryParams.append('relationship_stage', selectedStage);
@@ -64,12 +67,17 @@ const IssuesPage = () => {
         const queryString = queryParams.toString();
         const url = `/api/issues/primary${queryString ? `?${queryString}` : ''}`;
 
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const primaryIssuesResponse = await fetch(url);
+        if (!primaryIssuesResponse.ok) {
+          throw new Error(`HTTP error! status: ${primaryIssuesResponse.status} for primary issues`);
         }
-        const data: Issue[] = await response.json();
-        setPrimaryIssues(data);
+        const primaryIssuesData: Issue[] = await primaryIssuesResponse.json();
+        setPrimaryIssues(primaryIssuesData);
+
+        // Fetch most common issues distribution
+        const mostCommonIssuesResponse = await fetchMostCommonIssuesDistribution();
+        setMostCommonIssues(mostCommonIssuesResponse.mostCommonIssuesDistribution);
+
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -77,7 +85,7 @@ const IssuesPage = () => {
       }
     };
 
-    fetchPrimaryIssues();
+    fetchIssueData();
   }, [selectedStage, selectedAgeRange]); // Re-fetch when selectedStage or selectedAgeRange changes
 
   const handleStageChange = (value: string) => {
@@ -145,6 +153,19 @@ const IssuesPage = () => {
         </ul>
       ) : (
         <p>No primary issues found for the selected filters.</p>
+      )}
+
+      <h2 className="text-xl font-semibold mb-3 mt-6">Most Common Issues (Overall)</h2>
+      {mostCommonIssues.length > 0 ? (
+        <ul>
+          {mostCommonIssues.map((issue) => (
+            <li key={issue._id} className="mb-1">
+              {issue._id}: {issue.count}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No overall common issues data available.</p>
       )}
     </div>
   );

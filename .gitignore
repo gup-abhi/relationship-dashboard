@@ -2,6 +2,7 @@ node_modules
 *.pdf
 TODO.md
 dashboard_plan.md
+project_plan.md
 
 # Environment variables
 .env

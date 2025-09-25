@@ -1,25 +1,25 @@
 import express from 'express';
 const router = express.Router();
 import Post from '../models/Post.js';
+import { processMultiValueField } from '../utils/multiValueProcessor.js';
+import { buildMatchStage } from '../utils/filterBuilder.js';
 
 // GET /api/issues/primary
 router.get('/primary', async (req, res) => {
   try {
     const { relationship_stage, age_range_op } = req.query;
-    let matchStage = {};
+    const match = buildMatchStage({ relationship_stage, age_range_op });
 
-    if (relationship_stage) {
-      matchStage.relationship_stage = relationship_stage;
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
     }
-    if (age_range_op) {
-      matchStage.age_range_op = age_range_op;
-    }
-
-    const primaryIssues = await Post.aggregate([
-      { $match: matchStage },
+    pipeline.push(
       { $group: { _id: '$issue_category', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
-    ]);
+    );
+
+    const primaryIssues = await Post.aggregate(pipeline);
     res.json(primaryIssues);
   } catch (err) {
     console.error(err.message);
@@ -30,12 +30,7 @@ router.get('/primary', async (req, res) => {
 // GET /api/issues/secondary
 router.get('/secondary', async (req, res) => {
   try {
-    const secondaryIssues = await Post.aggregate([
-      { $project: { secondary_issues: { $split: ['$secondary_issues', '; '] } } },
-      { $unwind: '$secondary_issues' },
-      { $group: { _id: '$secondary_issues', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ]);
+    const secondaryIssues = await Post.aggregate(processMultiValueField('secondary_issues'));
     res.json(secondaryIssues);
   } catch (err) {
     console.error(err.message);
@@ -46,12 +41,7 @@ router.get('/secondary', async (req, res) => {
 // GET /api/issues/red-flags
 router.get('/red-flags', async (req, res) => {
   try {
-    const redFlags = await Post.aggregate([
-      { $project: { red_flags_present: { $split: ['$red_flags_present', '; '] } } },
-      { $unwind: '$red_flags_present' },
-      { $group: { _id: '$red_flags_present', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ]);
+    const redFlags = await Post.aggregate(processMultiValueField('red_flags_present'));
     res.json(redFlags);
   } catch (err) {
     console.error(err.message);
@@ -62,12 +52,7 @@ router.get('/red-flags', async (req, res) => {
 // GET /api/issues/positive-indicators
 router.get('/positive-indicators', async (req, res) => {
   try {
-    const positiveIndicators = await Post.aggregate([
-      { $project: { positive_indicators: { $split: ['$positive_indicators', '; '] } } },
-      { $unwind: '$positive_indicators' },
-      { $group: { _id: '$positive_indicators', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ]);
+    const positiveIndicators = await Post.aggregate(processMultiValueField('positive_indicators'));
     res.json(positiveIndicators);
   } catch (err) {
     console.error(err.message);
