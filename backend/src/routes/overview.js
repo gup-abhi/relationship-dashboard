@@ -1,17 +1,21 @@
 import express from 'express';
-const router = express.Router();
 import Post from '../models/Post.js';
+import { getPostsCount, getMostCommonIssues } from '../services/aggregationService.js';
+import { getTotalPostsCount, getMostCommonIssuesController } from '../controllers/overviewController.js';
+
+const router = express.Router();
+
+// GET /api/overview/total-posts
+router.get('/total-posts', getTotalPostsCount);
+
+// GET /api/overview/most-common-issues
+router.get('/most-common-issues', getMostCommonIssuesController);
 
 // GET /api/overview/kpis
-router.get('/kpis', async (req, res) => {
+router.get('/kpis', async (req, res, next) => {
   try {
-    const totalPosts = await Post.countDocuments();
-
-    const mostCommonIssue = await Post.aggregate([
-      { $group: { _id: '$issue_category', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 1 },
-    ]);
+    const totalPosts = await getPostsCount();
+    const mostCommonIssue = await getMostCommonIssues();
 
     const averageComplexity = await Post.aggregate([
       { $group: { _id: null, avgComplexity: { $avg: '$complexity_score' } } },
@@ -23,15 +27,14 @@ router.get('/kpis', async (req, res) => {
 
     const kpis = {
       totalPosts,
-      mostCommonIssue: mostCommonIssue[0],
+      mostCommonIssue: mostCommonIssue,
       averageComplexity: averageComplexity[0].avgComplexity,
       sentimentDistribution,
     };
 
     res.json(kpis);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    next(err);
   }
 });
 
