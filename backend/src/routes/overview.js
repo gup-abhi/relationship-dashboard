@@ -13,6 +13,8 @@ import {
   getAverageComplexityScoreController,
   getSentimentDistributionController,
   getMostCommonIssuesDistributionController,
+  getTopIssuesController,
+  getRecentTrendsController,
 } from '../controllers/overviewController.js';
 
 const router = express.Router();
@@ -57,18 +59,12 @@ router.get('/kpis', async (req, res, next) => {
 });
 
 // GET /api/overview/top-issues
-router.get('/top-issues', (req, res) => {
-  res.json({ message: 'Top issues endpoint' });
-});
+router.get('/top-issues', getTopIssuesController);
 
 // GET /api/overview/sentiment
-router.get('/sentiment', (req, res) => {
-  res.json({ message: 'Sentiment endpoint' });
-});
+router.get('/sentiment', getSentimentDistributionController);
 
 // GET /api/overview/recent-trends
-router.get('/recent-trends', (req, res) => {
-  res.json({ message: 'Recent trends endpoint' });
-});
+router.get('/recent-trends', getRecentTrendsController);
 
 export default router;

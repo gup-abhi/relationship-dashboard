@@ -42,11 +42,17 @@ export const api = {
     apiRequest<T>(endpoint, { method: 'DELETE', ...options }),
 };
 
-export const fetchAverageComplexityScore = () =>
-  api.get<{ averageComplexity: number }>('/overview/average-complexity');
+export const fetchAverageComplexityScore = (filters?: Record<string, string>) =>
+  api.get<{ averageComplexity: number }>('/overview/average-complexity', { params: filters });
 
-export const fetchSentimentDistribution = () =>
-  api.get<{ sentimentDistribution: Array<{ _id: string; count: number }> }>('/overview/sentiment-distribution');
+export const fetchSentimentDistribution = (filters?: Record<string, string>) =>
+  api.get<{ sentimentDistribution: Array<{ _id: string; count: number }> }>('/overview/sentiment-distribution', { params: filters });
 
-export const fetchMostCommonIssuesDistribution = () =>
-  api.get<{ mostCommonIssuesDistribution: Array<{ _id: string; count: number }> }>('/overview/most-common-issues-distribution');
+export const fetchMostCommonIssuesDistribution = (filters?: Record<string, string>) =>
+  api.get<{ mostCommonIssuesDistribution: Array<{ _id: string; count: number }> }>('/overview/most-common-issues-distribution', { params: filters });
+
+export const fetchTopIssues = (limit: number = 5, filters?: Record<string, string>) =>
+  api.get<{ topIssues: Array<{ _id: string; count: number }> }>('/overview/top-issues', { params: { limit: limit.toString(), ...filters } });
+
+export const fetchRecentTrends = (timeUnit: string = 'day', dateField: string = 'created_date', filters?: Record<string, string>) =>
+  api.get<{ recentTrends: Array<{ _id: string; count: number }> }>('/overview/recent-trends', { params: { timeUnit, dateField, ...filters } });

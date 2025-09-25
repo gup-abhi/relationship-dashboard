@@ -1,5 +1,6 @@
 import Post from '../models/Post.js';
 import { buildMatchStage } from '../utils/filterBuilder.js';
+import { getTimeSeriesAggregation } from '../utils/timeSeriesAggregator.js';
 
 const getPostsCount = async (filters = {}) => {
   try {
@@ -103,6 +104,41 @@ const getMostCommonIssuesDistribution = async (filters = {}) => {
   }
 };
 
+const getTopIssues = async (limit = 5, filters = {}) => {
+  try {
+    const match = buildMatchStage(filters);
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
+    }
+    pipeline.push(
+      { $group: { _id: '$issue_category', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: limit },
+    );
+    const topIssues = await Post.aggregate(pipeline);
+    return topIssues;
+  } catch (error) {
+    throw new Error(`Error fetching top issues: ${error.message}`);
+  }
+};
+
+const getRecentTrends = async (timeUnit = 'day', dateField = 'created_date', filters = {}) => {
+  try {
+    const match = buildMatchStage(filters);
+    const timeSeriesPipeline = getTimeSeriesAggregation(timeUnit, dateField);
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
+    }
+    pipeline.push(...timeSeriesPipeline);
+    const recentTrends = await Post.aggregate(pipeline);
+    return recentTrends;
+  } catch (error) {
+    throw new Error(`Error fetching recent trends: ${error.message}`);
+  }
+};
+
 export {
   getPostsCount,
   getPostsByField,
@@ -110,4 +146,6 @@ export {
   getAverageComplexityScore,
   getSentimentDistribution,
   getMostCommonIssuesDistribution,
+  getTopIssues,
+  getRecentTrends,
 };

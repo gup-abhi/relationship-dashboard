@@ -4,6 +4,8 @@ import {
   getAverageComplexityScore,
   getSentimentDistribution,
   getMostCommonIssuesDistribution,
+  getTopIssues,
+  getRecentTrends,
 } from '../services/aggregationService.js';
 
 const getTotalPostsCount = async (req, res, next) => {
@@ -56,10 +58,32 @@ const getMostCommonIssuesDistributionController = async (req, res, next) => {
   }
 };
 
+const getTopIssuesController = async (req, res, next) => {
+  try {
+    const { limit, ...filters } = req.query;
+    const topIssues = await getTopIssues(parseInt(limit), filters);
+    res.status(200).json({ topIssues });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getRecentTrendsController = async (req, res, next) => {
+  try {
+    const { timeUnit, dateField, ...filters } = req.query;
+    const recentTrends = await getRecentTrends(timeUnit, dateField, filters);
+    res.status(200).json({ recentTrends });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   getTotalPostsCount,
   getMostCommonIssuesController,
   getAverageComplexityScoreController,
   getSentimentDistributionController,
   getMostCommonIssuesDistributionController,
+  getTopIssuesController,
+  getRecentTrendsController,
 };
