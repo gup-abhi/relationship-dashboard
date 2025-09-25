@@ -15,8 +15,14 @@ router.get('/age-ranges', async (req, res, next) => {
 });
 
 // GET /api/demographics/gender
-router.get('/gender', (req, res) => {
-  res.json({ message: 'Gender distribution endpoint' });
+router.get('/gender', async (req, res, next) => {
+  try {
+    const filters = req.query;
+    const genderDistribution = await getPostsByField('gender_op', filters);
+    res.status(200).json({ genderDistribution });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // GET /api/demographics/relationship-stages
