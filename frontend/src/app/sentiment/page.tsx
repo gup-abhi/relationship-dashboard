@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import OverallSentimentPieChart from '@/components/OverallSentimentPieChart';
 import SentimentDistributionChart from '@/components/SentimentDistributionChart';
+import SentimentTrendsChart from '@/components/SentimentTrendsChart';
 import {
   Select,
   SelectContent,
@@ -19,8 +20,18 @@ interface SentimentData {
   count: number;
 }
 
+interface SentimentTrendData {
+  _id: string; // Date
+  count: number;
+}
+
 const fetchSentimentData = async (filters?: Record<string, string>): Promise<SentimentData[]> => {
   return api.get('/sentiment/distribution', { params: filters });
+};
+
+const fetchSentimentTrends = async (filters?: Record<string, string>): Promise<SentimentTrendData[]> => {
+  const params = { ...filters, timeUnit: 'month' };
+  return api.get('/sentiment/trends', { params });
 };
 
 const fetchUniqueValues = async (field: string): Promise<string[]> => {
@@ -39,6 +50,7 @@ const SentimentPage: React.FC = () => {
   };
 
   const { data: sentimentData, isLoading, isError } = useQuery<SentimentData[]>({ queryKey: ['sentimentData', filters], queryFn: () => fetchSentimentData(filters) });
+  const { data: sentimentTrends, isLoading: trendsLoading, isError: trendsError } = useQuery<SentimentTrendData[]>({ queryKey: ['sentimentTrends', filters], queryFn: () => fetchSentimentTrends(filters) });
 
   const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
   const { data: uniqueAgeRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => fetchUniqueValues('age-ranges') });
@@ -48,11 +60,11 @@ const SentimentPage: React.FC = () => {
     setSelectedAgeRange('all');
   };
 
-  if (isLoading) {
+  if (isLoading || trendsLoading) {
     return <p>Loading sentiment data...</p>;
   }
 
-  if (isError) {
+  if (isError || trendsError) {
     return <p className="text-red-500">Failed to fetch sentiment data</p>;
   }
 
@@ -112,6 +124,15 @@ const SentimentPage: React.FC = () => {
             <SentimentDistributionChart data={sentimentData.map(item => ({ name: item._id, value: item.count }))} />
           ) : (
             <p>No sentiment distribution data available for the selected filters.</p>
+          )}
+        </div>
+
+        <div className="bg-card p-4 shadow rounded-lg col-span-full">
+          <h2 className="text-xl font-semibold mb-2">Sentiment Over Time</h2>
+          {sentimentTrends && sentimentTrends.length > 0 ? (
+            <SentimentTrendsChart data={sentimentTrends} />
+          ) : (
+            <p>No sentiment trends data available.</p>
           )}
         </div>
       </div>

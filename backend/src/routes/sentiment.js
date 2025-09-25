@@ -1,14 +1,12 @@
 import express from 'express';
 const router = express.Router();
-import { getSentimentDistribution } from '../controllers/sentimentController.js';
+import { getSentimentDistribution, getSentimentTrends } from '../controllers/sentimentController.js';
 
 // GET /api/sentiment/distribution
 router.get('/distribution', getSentimentDistribution);
 
 // GET /api/sentiment/trends
-router.get('/trends', (req, res) => {
-  res.json({ message: 'Sentiment trends over time endpoint' });
-});
+router.get('/trends', getSentimentTrends);
 
 // GET /api/sentiment/by-demographics
 router.get('/by-demographics', (req, res) => {
