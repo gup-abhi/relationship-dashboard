@@ -26,19 +26,25 @@ router.get('/gender', async (req, res, next) => {
 });
 
 // GET /api/demographics/relationship-stages
-router.get('/relationship-stages', async (req, res) => {
+router.get('/relationship-stages', async (req, res, next) => {
   try {
-    const stages = await Post.distinct('relationship_stage');
-    res.json(stages);
+    const filters = req.query;
+    const relationshipStagesDistribution = await getPostsByField('relationship_stage', filters);
+    res.status(200).json({ relationshipStagesDistribution });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    next(err);
   }
 });
 
 // GET /api/demographics/relationship-length
-router.get('/relationship-length', (req, res) => {
-  res.json({ message: 'Relationship duration analysis endpoint' });
+router.get('/relationship-length', async (req, res, next) => {
+  try {
+    const filters = req.query;
+    const relationshipLengthDistribution = await getPostsByField('relationship_length', filters);
+    res.status(200).json({ relationshipLengthDistribution });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;
