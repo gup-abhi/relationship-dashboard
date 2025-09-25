@@ -1,48 +1,31 @@
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, PieLabelRenderProps } from 'recharts';
+'use client';
 
-interface SentimentData {
-  _id: string;
-  count: number;
-}
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface SentimentDistributionChartProps {
-  data: SentimentData[];
+  data: { name: string; value: number }[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-const SentimentDistributionChart: React.FC<SentimentDistributionChartProps> = ({ data }) => {
-  // Map the data to the format expected by Recharts PieChart
-  const chartData = data.map(item => ({
-    name: item._id,
-    value: item.count,
-  }));
-
+export default function SentimentDistributionChart({ data }: SentimentDistributionChartProps) {
   return (
-    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px' }}>
-      <ResponsiveContainer width="100%" height={400}>
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            outerRadius={150}
-            fill="#8884d8"
-            dataKey="value"
-            label={({ name, percent }: PieLabelRenderProps) => `${name}: ${(percent as number * 100).toFixed(0)}%`}
-          >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{
+          top: 5,
+          right: 30,
+          left: 80,
+          bottom: 5,
+        }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis type="number" />
+        <YAxis type="category" dataKey="name" interval={0} tick={{ fontSize: 12 }} />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="value" fill="#8884d8" label={{ position: 'right' }} />
+      </BarChart>
+    </ResponsiveContainer>
   );
-};
-
-export default SentimentDistributionChart;
+}

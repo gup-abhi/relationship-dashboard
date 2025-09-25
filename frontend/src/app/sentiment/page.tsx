@@ -1,6 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import OverallSentimentPieChart from '@/components/OverallSentimentPieChart';
+import SentimentDistributionChart from '@/components/SentimentDistributionChart';
 import {
   Select,
   SelectContent,
@@ -8,108 +12,63 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
-interface Sentiment {
+interface SentimentData {
   _id: string;
   count: number;
 }
 
-const SentimentPage = () => {
-  const [sentimentDistribution, setSentimentDistribution] = useState<Sentiment[]>([]);
-  const [relationshipStages, setRelationshipStages] = useState<string[]>([]);
-  const [ageRanges, setAgeRanges] = useState<string[]>([]);
+const fetchSentimentData = async (filters?: Record<string, string>): Promise<SentimentData[]> => {
+  return api.get('/sentiment/distribution', { params: filters });
+};
+
+const fetchUniqueValues = async (field: string): Promise<string[]> => {
+  const response = await api.get<{ [key: string]: { _id: string }[] }>(`/demographics/${field}`);
+  const key = Object.keys(response)[0];
+  return ['all', ...response[key].map(item => item._id)];
+};
+
+const SentimentPage: React.FC = () => {
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [selectedAgeRange, setSelectedAgeRange] = useState<string>('all');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchFilters = async () => {
-      try {
-        const [stagesRes, ageRangesRes] = await Promise.all([
-          fetch('/api/demographics/relationship-stages'),
-          fetch('/api/demographics/age-ranges'),
-        ]);
-
-        if (!stagesRes.ok) throw new Error(`HTTP error! status: ${stagesRes.status} for stages`);
-        if (!ageRangesRes.ok) throw new Error(`HTTP error! status: ${ageRangesRes.status} for age ranges`);
-
-        const stagesData: string[] = await stagesRes.json();
-        const ageRangesResponse = await ageRangesRes.json();
-        const ageRangesData: string[] = ageRangesResponse.ageDistribution.map((item: any) => item._id);
-
-        setRelationshipStages(['all', ...stagesData]); // Add 'all' option for 'All'
-        setAgeRanges(['all', ...ageRangesData]); // Add 'all' option for 'All'
-      } catch (err: any) {
-        console.error("Failed to fetch filters:", err);
-        // setError(err.message); // Decide if you want to show this error to the user
-      }
-    };
-
-    fetchFilters();
-  }, []);
-
-  useEffect(() => {
-    const fetchSentimentDistribution = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const queryParams = new URLSearchParams();
-        if (selectedStage !== 'all') {
-          queryParams.append('relationship_stage', selectedStage);
-        }
-        if (selectedAgeRange !== 'all') {
-          queryParams.append('age_range_op', selectedAgeRange);
-        }
-
-        const queryString = queryParams.toString();
-        const url = `/api/sentiment/distribution${queryString ? `?${queryString}` : ''}`;
-
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data: Sentiment[] = await response.json();
-        setSentimentDistribution(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSentimentDistribution();
-  }, [selectedStage, selectedAgeRange]); // Re-fetch when selectedStage or selectedAgeRange changes
-
-  const handleStageChange = (value: string) => {
-    setSelectedStage(value);
+  const filters = {
+    ...(selectedStage !== 'all' && { relationship_stage: selectedStage }),
+    ...(selectedAgeRange !== 'all' && { age_range_op: selectedAgeRange }),
   };
 
-  const handleAgeRangeChange = (value: string) => {
-    setSelectedAgeRange(value);
+  const { data: sentimentData, isLoading, isError } = useQuery<SentimentData[]>({ queryKey: ['sentimentData', filters], queryFn: () => fetchSentimentData(filters) });
+
+  const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
+  const { data: uniqueAgeRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => fetchUniqueValues('age-ranges') });
+
+  const handleClearFilters = () => {
+    setSelectedStage('all');
+    setSelectedAgeRange('all');
   };
 
-  if (loading) {
-    return <div>Loading sentiment data...</div>;
+  if (isLoading) {
+    return <p>Loading sentiment data...</p>;
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
+  if (isError) {
+    return <p className="text-red-500">Failed to fetch sentiment data</p>;
   }
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Sentiment Analysis</h1>
 
-      <div className="mb-4 flex space-x-4">
+      <div className="mb-4 flex space-x-4 items-end">
         <div>
-          <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-gray-700">Filter by Relationship Stage:</label>
-          <Select onValueChange={handleStageChange} value={selectedStage}>
+          <label htmlFor="relationship-stage-select" className="block text-sm font-medium text-foreground">Filter by Relationship Stage:</label>
+          <Select onValueChange={setSelectedStage} value={selectedStage}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select a stage" />
             </SelectTrigger>
             <SelectContent>
-              {relationshipStages.map((stage) => (
+              {uniqueStages?.map((stage) => (
                 <SelectItem key={stage} value={stage}>
                   {stage === 'all' ? 'All Stages' : stage}
                 </SelectItem>
@@ -119,13 +78,13 @@ const SentimentPage = () => {
         </div>
 
         <div>
-          <label htmlFor="age-range-select" className="block text-sm font-medium text-gray-700">Filter by Age Range:</label>
-          <Select onValueChange={handleAgeRangeChange} value={selectedAgeRange}>
+          <label htmlFor="age-range-select" className="block text-sm font-medium text-foreground">Filter by Age Range:</label>
+          <Select onValueChange={setSelectedAgeRange} value={selectedAgeRange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select an age range" />
             </SelectTrigger>
             <SelectContent>
-              {ageRanges.map((range) => (
+              {uniqueAgeRanges?.map((range) => (
                 <SelectItem key={range} value={range}>
                   {range === 'all' ? 'All Age Ranges' : range}
                 </SelectItem>
@@ -133,20 +92,29 @@ const SentimentPage = () => {
             </SelectContent>
           </Select>
         </div>
+
+        <Button onClick={handleClearFilters} className="self-end">Clear All Filters</Button>
       </div>
 
-      <h2 className="text-xl font-semibold mb-3">Sentiment Distribution</h2>
-      {sentimentDistribution.length > 0 ? (
-        <ul>
-          {sentimentDistribution.map((sentiment) => (
-            <li key={sentiment._id} className="mb-1">
-              {sentiment._id}: {sentiment.count}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No sentiment data found for the selected filters.</p>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-card p-4 shadow rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Sentiment Overview</h2>
+          {sentimentData && sentimentData.length > 0 ? (
+            <OverallSentimentPieChart data={sentimentData.slice(0, 5).map(item => ({ name: item._id, value: item.count }))} />
+          ) : (
+            <p>No sentiment data available.</p>
+          )}
+        </div>
+
+        <div className="bg-card p-4 shadow rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Sentiment Distribution</h2>
+          {sentimentData && sentimentData.length > 0 ? (
+            <SentimentDistributionChart data={sentimentData.map(item => ({ name: item._id, value: item.count }))} />
+          ) : (
+            <p>No sentiment distribution data available for the selected filters.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
