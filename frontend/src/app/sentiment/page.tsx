@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import OverallSentimentPieChart from '@/components/OverallSentimentPieChart';
@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { useLoader } from '@/components/LoaderProvider';
 
 interface SentimentData {
   _id: string;
@@ -65,6 +66,7 @@ const fetchUniqueValues = async (field: string): Promise<string[]> => {
 const SentimentPage: React.FC = () => {
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [selectedAgeRange, setSelectedAgeRange] = useState<string>('all');
+  const { showLoader, hideLoader } = useLoader();
 
   const filters = {
     ...(selectedStage !== 'all' && { relationship_stage: selectedStage }),
@@ -80,14 +82,18 @@ const SentimentPage: React.FC = () => {
   const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
   const { data: uniqueAgeRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => fetchUniqueValues('age-ranges') });
 
+  useEffect(() => {
+    if (isLoading || trendsLoading || ageLoading || stageLoading || urgencyLoading) {
+      showLoader();
+    } else {
+      hideLoader();
+    }
+  }, [isLoading, trendsLoading, ageLoading, stageLoading, urgencyLoading, showLoader, hideLoader]);
+
   const handleClearFilters = () => {
     setSelectedStage('all');
     setSelectedAgeRange('all');
   };
-
-  if (isLoading || trendsLoading || ageLoading || stageLoading || urgencyLoading) {
-    return <p>Loading sentiment data...</p>;
-  }
 
   if (isError || trendsError || ageError || stageError || urgencyError) {
     return <p className="text-red-500">Failed to fetch sentiment data</p>;

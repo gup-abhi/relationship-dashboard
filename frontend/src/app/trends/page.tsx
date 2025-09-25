@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import PostVolumeTrendsChart from '@/components/PostVolumeTrendsChart';
-import TrendingTopicsChart from '@/components/TrendingTopicsChart'; // Import the new component
+import TrendingTopicsChart from '@/components/TrendingTopicsChart';
 import {
   Select,
   SelectContent,
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { useLoader } from '@/components/LoaderProvider';
 
 interface PostVolumeData {
   _id: string; // Date in YYYY-MM-DD format
@@ -42,27 +43,32 @@ const fetchUniqueValues = async (field: string): Promise<string[]> => {
 const TrendsPage: React.FC = () => {
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [selectedAgeRange, setSelectedAgeRange] = useState<string>('all');
+  const { showLoader, hideLoader } = useLoader();
 
   const filters = {
     ...(selectedStage !== 'all' && { relationship_stage: selectedStage }),
     ...(selectedAgeRange !== 'all' && { age_range_op: selectedAgeRange }),
   };
 
-  const { data: postVolume, isLoading: isLoadingPostVolume, isError: isErrorPostVolume } = useQuery<PostVolumeData[]>({ queryKey: ['postVolume', filters], queryFn: () => fetchPostVolume(filters) });
-  const { data: trendingTopics, isLoading: isLoadingTrendingTopics, isError: isErrorTrendingTopics } = useQuery<TrendingTopicsData[]>({ queryKey: ['trendingTopics', filters], queryFn: () => fetchTrendingTopics(filters) });
+  const { data: postVolume, isFetching: isFetchingPostVolume, isError: isErrorPostVolume } = useQuery<PostVolumeData[]>({ queryKey: ['postVolume', filters], queryFn: () => fetchPostVolume(filters) });
+  const { data: trendingTopics, isFetching: isFetchingTrendingTopics, isError: isErrorTrendingTopics } = useQuery<TrendingTopicsData[]>({ queryKey: ['trendingTopics', filters], queryFn: () => fetchTrendingTopics(filters) });
 
 
   const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
   const { data: uniqueAgeRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => fetchUniqueValues('age-ranges') });
 
+  useEffect(() => {
+    if (isFetchingPostVolume || isFetchingTrendingTopics) {
+      showLoader();
+    } else {
+      hideLoader();
+    }
+  }, [isFetchingPostVolume, isFetchingTrendingTopics, showLoader, hideLoader]);
+
   const handleClearFilters = () => {
     setSelectedStage('all');
     setSelectedAgeRange('all');
   };
-
-  if (isLoadingPostVolume || isLoadingTrendingTopics) {
-    return <p>Loading trends data...</p>;
-  }
 
   if (isErrorPostVolume || isErrorTrendingTopics) {
     return <p className="text-red-500">Failed to fetch trends data</p>;

@@ -1,11 +1,12 @@
 "use client";
 
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, fetchTopIssues, fetchRecentTrends } from '@/lib/api';
 import BarChart from '@/components/TopIssuesChart'; // Reusing TopIssuesChart as a generic BarChart
 import RecentTrendsChart from '@/components/RecentTrendsChart';
-import Sidebar from '@/components/Sidebar';
 import SentimentDistributionChart from '@/components/SentimentDistributionChart';
+import { useLoader } from '@/components/LoaderProvider';
 
 const fetchKpis = async () => {
   const response = await api.get('/overview/kpis');
@@ -13,13 +14,18 @@ const fetchKpis = async () => {
 };
 
 export default function Home() {
+  const { showLoader, hideLoader } = useLoader();
   const { data: kpis, isLoading: kpisLoading, isError: kpisError, error: kpisFetchError } = useQuery<any>({ queryKey: ['kpis'], queryFn: fetchKpis });
   const { data: topIssues, isLoading: topIssuesLoading, isError: topIssuesError, error: topIssuesFetchError } = useQuery<any>({ queryKey: ['topIssues'], queryFn: () => fetchTopIssues(5) });
   const { data: recentTrends, isLoading: recentTrendsLoading, isError: recentTrendsError, error: recentTrendsFetchError } = useQuery<any>({ queryKey: ['recentTrends'], queryFn: () => fetchRecentTrends('month', 'created_date') });
 
-  if (kpisLoading || topIssuesLoading || recentTrendsLoading) {
-    return <p>Loading Overview Data...</p>;
-  }
+  useEffect(() => {
+    if (kpisLoading || topIssuesLoading || recentTrendsLoading) {
+      showLoader();
+    } else {
+      hideLoader();
+    }
+  }, [kpisLoading, topIssuesLoading, recentTrendsLoading, showLoader, hideLoader]);
 
   if (kpisError || topIssuesError || recentTrendsError) {
     return (

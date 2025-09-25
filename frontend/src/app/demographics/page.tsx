@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import AgeDistributionBarChart from '@/components/AgeDistributionBarChart';
@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button'; // Assuming a Button component exists
+import { Button } from '@/components/ui/button';
+import { useLoader } from '@/components/LoaderProvider';
 
 interface AgeDistributionData {
   _id: string;
@@ -79,6 +80,7 @@ const DemographicsPage: React.FC = () => {
   const [selectedGender, setSelectedGender] = useState<string>('all');
   const [selectedRelationshipLength, setSelectedRelationshipLength] = useState<string>('all');
   const [selectedRelationshipStage, setSelectedRelationshipStage] = useState<string>('all');
+  const { showLoader, hideLoader } = useLoader();
 
   const filters = {
     ...(selectedAgeRange !== 'all' && { age_range_op: selectedAgeRange }),
@@ -99,16 +101,20 @@ const DemographicsPage: React.FC = () => {
   const { data: uniqueRelationshipLengths } = useQuery<string[]>({ queryKey: ['uniqueRelationshipLengths'], queryFn: () => api.get<{ relationshipLengthDistribution: { _id: string }[] }>('/demographics/relationship-length').then(res => ['all', ...res.relationshipLengthDistribution.map(item => item._id)]) });
   const { data: uniqueRelationshipStages } = useQuery<string[]>({ queryKey: ['uniqueRelationshipStages'], queryFn: () => api.get<{ relationshipStagesDistribution: { _id: string }[] }>('/demographics/relationship-stages').then(res => ['all', ...res.relationshipStagesDistribution.map(item => item._id)]) });
 
+  useEffect(() => {
+    if (ageLoading || genderLoading || relationshipLengthLoading || relationshipStagesLoading || crossTabulationLoading) {
+      showLoader();
+    } else {
+      hideLoader();
+    }
+  }, [ageLoading, genderLoading, relationshipLengthLoading, relationshipStagesLoading, crossTabulationLoading, showLoader, hideLoader]);
+
   const handleClearFilters = () => {
     setSelectedAgeRange('all');
     setSelectedGender('all');
     setSelectedRelationshipLength('all');
     setSelectedRelationshipStage('all');
   };
-
-  if (ageLoading || genderLoading || relationshipLengthLoading || relationshipStagesLoading || crossTabulationLoading) {
-    return <p>Loading demographics data...</p>;
-  }
 
   if (ageError || genderError || relationshipLengthError || relationshipStagesError || crossTabulationError) {
     return (

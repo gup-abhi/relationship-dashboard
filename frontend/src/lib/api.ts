@@ -59,3 +59,18 @@ export const fetchRecentTrends = (timeUnit: string = 'day', dateField: string = 
 
 export const fetchTrendingTopics = (filters?: Record<string, string>) =>
   api.get<Array<{ _id: string; count: number }>>('/trends/topics', { params: filters });
+
+export const fetchPrimaryIssues = (filters?: Record<string, string>) =>
+  api.get<Array<{ _id: string; count: number }>>('/issues/primary', { params: filters });
+
+export const fetchSecondaryIssues = (filters?: Record<string, string>) =>
+  api.get<Array<{ _id: string; count: number }>>('/issues/secondary', { params: filters });
+
+export const fetchRedFlags = (filters?: Record<string, string>) =>
+  api.get<Array<{ _id: string; count: number }>>('/issues/red-flags', { params: filters });
+
+export const fetchPositiveIndicators = (filters?: Record<string, string>) =>
+  api.get<Array<{ _id: string; count: number }>>('/issues/positive-indicators', { params: filters });
+
+export const fetchKeyThemes = (filters?: Record<string, string>) =>
+  api.get<Array<{ _id: string; count: number }>>('/issues/themes', { params: filters });
