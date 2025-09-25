@@ -37,6 +37,37 @@ const getPostsByField = async (field, filters = {}) => {
   }
 };
 
+const getCrossTabulation = async (field1, field2, filters = {}) => {
+  try {
+    const match = buildMatchStage(filters);
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
+    }
+    pipeline.push(
+      {
+        $group: {
+          _id: { field1: `$${field1}`, field2: `$${field2}` },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          field1: "$_id.field1",
+          field2: "$_id.field2",
+          count: "$count"
+        }
+      },
+      { $sort: { field1: 1, field2: 1 } }
+    );
+    const result = await Post.aggregate(pipeline);
+    return result;
+  } catch (error) {
+    throw new Error(`Error fetching cross-tabulation for ${field1} and ${field2}: ${error.message}`);
+  }
+};
+
 const getMostCommonIssues = async (filters = {}) => {
   try {
     const match = buildMatchStage(filters);
@@ -142,6 +173,7 @@ const getRecentTrends = async (timeUnit = 'day', dateField = 'created_date', fil
 export {
   getPostsCount,
   getPostsByField,
+  getCrossTabulation,
   getMostCommonIssues,
   getAverageComplexityScore,
   getSentimentDistribution,

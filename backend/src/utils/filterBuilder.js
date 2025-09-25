@@ -10,6 +10,12 @@ const buildMatchStage = (filters) => {
   if (filters.post_sentiment && filters.post_sentiment !== 'all') {
     matchStage.post_sentiment = filters.post_sentiment;
   }
+  if (filters.gender_op && filters.gender_op !== 'all') {
+    matchStage.gender_op = filters.gender_op;
+  }
+  if (filters.relationship_length && filters.relationship_length !== 'all') {
+    matchStage.relationship_length = filters.relationship_length;
+  }
   // Add more filter conditions as needed
 
   return Object.keys(matchStage).length > 0 ? { $match: matchStage } : {};
