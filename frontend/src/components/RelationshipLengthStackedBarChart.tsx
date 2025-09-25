@@ -1,5 +1,6 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import CustomTooltip from './ui/CustomTooltip';
 
 interface RelationshipLengthData {
   _id: string;
@@ -25,7 +26,7 @@ const RelationshipLengthStackedBarChart: React.FC<RelationshipLengthStackedBarCh
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="_id" />
         <YAxis />
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <Legend />
         <Bar dataKey="count" stackId="a" fill="#8884d8" />
       </BarChart>

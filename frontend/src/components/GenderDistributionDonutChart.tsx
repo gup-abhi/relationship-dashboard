@@ -1,5 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import CustomTooltip from './ui/CustomTooltip';
 
 interface GenderData {
   _id: string;
@@ -36,7 +37,7 @@ const GenderDistributionDonutChart: React.FC<GenderDistributionDonutChartProps> 
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <Legend />
       </PieChart>
     </ResponsiveContainer>

@@ -27,24 +27,24 @@ const CrossTabulationHeatmap: React.FC<CrossTabulationHeatmapProps> = ({ data, f
   });
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto bg-gray-800 p-4 rounded-lg">
+      <table className="min-w-full divide-y divide-gray-700">
+        <thead className="bg-gray-700">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{field1Name} \ {field2Name}</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{field1Name} \ {field2Name}</th>
             {uniqueField2Values.map(val => (
-              <th key={val} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{val}</th>
+              <th key={val} className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{val}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-gray-800 divide-y divide-gray-700">
           {uniqueField1Values.map(f1Val => (
             <tr key={f1Val}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{f1Val}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{f1Val}</td>
               {uniqueField2Values.map(f2Val => {
                 const count = dataMap.get(f1Val)?.get(f2Val) || 0;
                 return (
-                  <td key={`${f1Val}-${f2Val}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td key={`${f1Val}-${f2Val}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                     {count}
                   </td>
                 );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import CustomTooltip from './ui/CustomTooltip';
 
 interface AgeData {
   _id: string;
@@ -25,7 +26,7 @@ const AgeDistributionBarChart: React.FC<AgeDistributionBarChartProps> = ({ data 
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="_id" />
         <YAxis />
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <Bar dataKey="count" fill="#8884d8" />
       </BarChart>
     </ResponsiveContainer>

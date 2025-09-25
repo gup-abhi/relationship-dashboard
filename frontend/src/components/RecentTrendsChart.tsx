@@ -11,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import CustomTooltip from './ui/CustomTooltip';
 
 interface RecentTrendsChartProps {
   data: Array<{ _id: string; count: number }>;
@@ -31,7 +32,7 @@ const RecentTrendsChart: React.FC<RecentTrendsChartProps> = ({ data }) => {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="_id" />
         <YAxis />
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <Legend />
         <Line type="monotone" dataKey="count" stroke="#8884d8" activeDot={{ r: 8 }} name="Number of Posts" />
       </LineChart>

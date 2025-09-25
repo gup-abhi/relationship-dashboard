@@ -11,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import CustomTooltip from './ui/CustomTooltip';
 
 interface TopIssuesChartProps {
   data: Array<{ _id: string; count: number }>;
@@ -33,7 +34,7 @@ const TopIssuesChart: React.FC<TopIssuesChartProps> = ({ data, title }) => {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis type="number" />
         <YAxis dataKey="_id" type="category" width={200} interval={0} />
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <Legend />
         <Bar dataKey="count" fill="#8884d8" name={title} barSize={20} />
       </BarChart>

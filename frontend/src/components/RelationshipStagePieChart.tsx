@@ -1,5 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import CustomTooltip from './ui/CustomTooltip';
 
 interface RelationshipStageData {
   _id: string;
@@ -34,7 +35,7 @@ const RelationshipStagePieChart: React.FC<RelationshipStagePieChartProps> = ({ d
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <Legend />
       </PieChart>
     </ResponsiveContainer>
