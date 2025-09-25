@@ -42,7 +42,7 @@ const ComplexityScoreHistogram: React.FC<ComplexityScoreHistogramProps> = ({ rel
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="_id" type="category" interval="0" label={{ value: "Complexity Score", position: "insideBottom", offset: 0 }} />
+          <XAxis dataKey="_id" type="category" interval={0} label={{ value: "Complexity Score", position: "insideBottom", offset: 0 }} />
           <YAxis label={{ value: "Number of Posts", angle: -90, position: "insideLeft" }} />
           <Tooltip />
           <Legend />
