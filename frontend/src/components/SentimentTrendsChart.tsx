@@ -1,6 +1,7 @@
 'use client';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import CustomTooltip from './ui/CustomTooltip';
 
 interface SentimentTrendData {
   _id: string; // Date
@@ -18,7 +19,7 @@ export default function SentimentTrendsChart({ data }: SentimentTrendsChartProps
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="_id" />
         <YAxis />
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <Legend />
         <Line type="monotone" dataKey="count" stroke="#8884d8" activeDot={{ r: 8 }} />
       </LineChart>

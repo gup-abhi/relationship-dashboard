@@ -44,13 +44,35 @@ const getCrossTabulation = async (field1, field2, filters = {}) => {
     if (Object.keys(match).length > 0) {
       pipeline.push(match);
     }
-    pipeline.push(
-      {
-        $group: {
-          _id: { field1: `$${field1}`, field2: `$${field2}` },
-          count: { $sum: 1 }
+
+    if (field2 === 'post_sentiment') {
+      pipeline.push(
+        {
+          $project: {
+            field1: `$${field1}`,
+            sentiments: { $split: ["$post_sentiment", "|"] }
+          }
+        },
+        { $unwind: "$sentiments" },
+        {
+          $group: {
+            _id: { field1: "$field1", field2: "$sentiments" },
+            count: { $sum: 1 }
+          }
         }
-      },
+      );
+    } else {
+      pipeline.push(
+        {
+          $group: {
+            _id: { field1: `$${field1}`, field2: `$${field2}` },
+            count: { $sum: 1 }
+          }
+        }
+      );
+    }
+
+    pipeline.push(
       {
         $project: {
           _id: 0,

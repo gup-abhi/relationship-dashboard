@@ -1,12 +1,13 @@
 'use client';
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import CustomTooltip from './ui/CustomTooltip';
 
 interface OverallSentimentPieChartProps {
   data: { name: string; value: number }[];
 }
 
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658"]; // Example colors for Positive, Neutral, Negative
+const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#00C49F", "#FFBB28", "#FF8042", "#0088FE", "#A020F0", "#F08080"];
 
 export default function OverallSentimentPieChart({ data }: OverallSentimentPieChartProps) {
   return (
@@ -30,7 +31,7 @@ export default function OverallSentimentPieChart({ data }: OverallSentimentPieCh
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <Legend />
       </PieChart>
     </ResponsiveContainer>

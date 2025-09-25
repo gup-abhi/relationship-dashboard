@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { getSentimentDistribution, getSentimentTrends } from '../controllers/sentimentController.js';
+import { getSentimentDistribution, getSentimentTrends, getSentimentByDemographics } from '../controllers/sentimentController.js';
 
 // GET /api/sentiment/distribution
 router.get('/distribution', getSentimentDistribution);
@@ -9,9 +9,7 @@ router.get('/distribution', getSentimentDistribution);
 router.get('/trends', getSentimentTrends);
 
 // GET /api/sentiment/by-demographics
-router.get('/by-demographics', (req, res) => {
-  res.json({ message: 'Sentiment by demographic segments endpoint' });
-});
+router.get('/by-demographics', getSentimentByDemographics);
 
 // GET /api/sentiment/urgency
 router.get('/urgency', (req, res) => {

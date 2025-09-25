@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import OverallSentimentPieChart from '@/components/OverallSentimentPieChart';
 import SentimentDistributionChart from '@/components/SentimentDistributionChart';
 import SentimentTrendsChart from '@/components/SentimentTrendsChart';
+import SentimentByDemographicsChart from '@/components/SentimentByDemographicsChart';
 import {
   Select,
   SelectContent,
@@ -25,6 +26,12 @@ interface SentimentTrendData {
   count: number;
 }
 
+interface SentimentByDemographicsData {
+  field1: string;
+  field2: string;
+  count: number;
+}
+
 const fetchSentimentData = async (filters?: Record<string, string>): Promise<SentimentData[]> => {
   return api.get('/sentiment/distribution', { params: filters });
 };
@@ -32,6 +39,11 @@ const fetchSentimentData = async (filters?: Record<string, string>): Promise<Sen
 const fetchSentimentTrends = async (filters?: Record<string, string>): Promise<SentimentTrendData[]> => {
   const params = { ...filters, timeUnit: 'month' };
   return api.get('/sentiment/trends', { params });
+};
+
+const fetchSentimentByDemographics = async (demographicField: string, filters?: Record<string, string>): Promise<SentimentByDemographicsData[]> => {
+  const params = { ...filters, demographicField };
+  return api.get('/sentiment/by-demographics', { params });
 };
 
 const fetchUniqueValues = async (field: string): Promise<string[]> => {
@@ -51,6 +63,8 @@ const SentimentPage: React.FC = () => {
 
   const { data: sentimentData, isLoading, isError } = useQuery<SentimentData[]>({ queryKey: ['sentimentData', filters], queryFn: () => fetchSentimentData(filters) });
   const { data: sentimentTrends, isLoading: trendsLoading, isError: trendsError } = useQuery<SentimentTrendData[]>({ queryKey: ['sentimentTrends', filters], queryFn: () => fetchSentimentTrends(filters) });
+  const { data: sentimentByAge, isLoading: ageLoading, isError: ageError } = useQuery<SentimentByDemographicsData[]>({ queryKey: ['sentimentByAge', filters], queryFn: () => fetchSentimentByDemographics('age_range_op', filters) });
+  const { data: sentimentByStage, isLoading: stageLoading, isError: stageError } = useQuery<SentimentByDemographicsData[]>({ queryKey: ['sentimentByStage', filters], queryFn: () => fetchSentimentByDemographics('relationship_stage', filters) });
 
   const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
   const { data: uniqueAgeRanges } = useQuery<string[]>({ queryKey: ['uniqueAgeRanges'], queryFn: () => fetchUniqueValues('age-ranges') });
@@ -60,11 +74,11 @@ const SentimentPage: React.FC = () => {
     setSelectedAgeRange('all');
   };
 
-  if (isLoading || trendsLoading) {
+  if (isLoading || trendsLoading || ageLoading || stageLoading) {
     return <p>Loading sentiment data...</p>;
   }
 
-  if (isError || trendsError) {
+  if (isError || trendsError || ageError || stageError) {
     return <p className="text-red-500">Failed to fetch sentiment data</p>;
   }
 
@@ -133,6 +147,24 @@ const SentimentPage: React.FC = () => {
             <SentimentTrendsChart data={sentimentTrends} />
           ) : (
             <p>No sentiment trends data available.</p>
+          )}
+        </div>
+
+        <div className="bg-card p-4 shadow rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Sentiment by Age Range</h2>
+          {sentimentByAge && sentimentByAge.length > 0 ? (
+            <SentimentByDemographicsChart data={sentimentByAge} field1Name="Age Range" />
+          ) : (
+            <p>No sentiment data available for this demographic.</p>
+          )}
+        </div>
+
+        <div className="bg-card p-4 shadow rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Sentiment by Relationship Stage</h2>
+          {sentimentByStage && sentimentByStage.length > 0 ? (
+            <SentimentByDemographicsChart data={sentimentByStage} field1Name="Relationship Stage" />
+          ) : (
+            <p>No sentiment data available for this demographic.</p>
           )}
         </div>
       </div>
