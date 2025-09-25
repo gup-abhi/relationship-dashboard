@@ -16,7 +16,6 @@ interface ChartData {
 
 interface SentimentByDemographicsChartProps {
   data: SentimentByDemographicsData[];
-  field1Name: string;
 }
 
 const transformDataForGroupedBarChart = (data: SentimentByDemographicsData[]): ChartData[] => {
@@ -33,7 +32,7 @@ const transformDataForGroupedBarChart = (data: SentimentByDemographicsData[]): C
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#00C49F", "#FFBB28", "#FF8042", "#0088FE", "#A020F0", "#F08080"];
 
-export default function SentimentByDemographicsChart({ data, field1Name }: SentimentByDemographicsChartProps) {
+export default function SentimentByDemographicsChart({ data }: SentimentByDemographicsChartProps) {
   const chartData = transformDataForGroupedBarChart(data);
   const sentimentTypes = Array.from(new Set(data.map(item => item.field2)));
 

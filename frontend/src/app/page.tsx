@@ -8,24 +8,41 @@ import RecentTrendsChart from '@/components/RecentTrendsChart';
 import SentimentDistributionChart from '@/components/SentimentDistributionChart';
 import { useLoader } from '@/components/LoaderProvider';
 
-const fetchKpis = async () => {
-  const response = await api.get('/overview/kpis');
+interface KpiData {
+  totalPosts: number;
+  mostCommonIssue: { _id: string };
+  averageComplexity: number;
+  sentimentDistribution: Array<{ _id: string; count: number }>;
+}
+
+interface IssueData {
+  _id: string;
+  count: number;
+}
+
+interface TrendData {
+  _id: string;
+  count: number;
+}
+
+const fetchKpis = async (): Promise<KpiData> => {
+  const response = await api.get<KpiData>('/overview/kpis');
   return response;
 };
 
 export default function Home() {
   const { showLoader, hideLoader } = useLoader();
-  const { data: kpis, isLoading: kpisLoading, isError: kpisError, error: kpisFetchError } = useQuery<any>({ queryKey: ['kpis'], queryFn: fetchKpis });
-  const { data: topIssues, isLoading: topIssuesLoading, isError: topIssuesError, error: topIssuesFetchError } = useQuery<any>({ queryKey: ['topIssues'], queryFn: () => fetchTopIssues(5) });
-  const { data: recentTrends, isLoading: recentTrendsLoading, isError: recentTrendsError, error: recentTrendsFetchError } = useQuery<any>({ queryKey: ['recentTrends'], queryFn: () => fetchRecentTrends('month', 'created_date') });
+  const { data: kpis, isFetching: kpisFetching, isError: kpisError, error: kpisFetchError } = useQuery<KpiData>({ queryKey: ['kpis'], queryFn: fetchKpis });
+  const { data: topIssues, isFetching: topIssuesFetching, isError: topIssuesError, error: topIssuesFetchError } = useQuery<{ topIssues: IssueData[] }>({ queryKey: ['topIssues'], queryFn: () => fetchTopIssues(5) });
+  const { data: recentTrends, isFetching: recentTrendsFetching, isError: recentTrendsError, error: recentTrendsFetchError } = useQuery<{ recentTrends: TrendData[] }>({ queryKey: ['recentTrends'], queryFn: () => fetchRecentTrends('month', 'created_date') });
 
   useEffect(() => {
-    if (kpisLoading || topIssuesLoading || recentTrendsLoading) {
+    if (kpisFetching || topIssuesFetching || recentTrendsFetching) {
       showLoader();
     } else {
       hideLoader();
     }
-  }, [kpisLoading, topIssuesLoading, recentTrendsLoading, showLoader, hideLoader]);
+  }, [kpisFetching, topIssuesFetching, recentTrendsFetching, showLoader, hideLoader]);
 
   if (kpisError || topIssuesError || recentTrendsError) {
     return (
@@ -63,7 +80,7 @@ export default function Home() {
             <h2 className="text-xl font-semibold mb-2">Sentiment Distribution</h2>
             {
               kpis.sentimentDistribution && kpis.sentimentDistribution.length > 0 ? (
-                <SentimentDistributionChart data={kpis.sentimentDistribution.map((item: any) => ({ name: item._id, value: item.count }))} />
+                <SentimentDistributionChart data={kpis.sentimentDistribution.map((item) => ({ name: item._id, value: item.count }))} />
               ) : (
                 <p>No sentiment data available.</p>
               )

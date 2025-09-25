@@ -31,7 +31,8 @@ const GenderDistributionDonutChart: React.FC<GenderDistributionDonutChartProps> 
           fill="#8884d8"
           paddingAngle={5}
           dataKey="value"
-          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          label={(props: any) => `${props.name}: ${(props.percent * 100).toFixed(0)}%`}
         >
           {chartData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

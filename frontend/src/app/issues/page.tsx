@@ -150,7 +150,11 @@ const IssuesPage = () => {
 
         <div className="bg-card p-4 shadow rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-2">Key Themes</h2>
-          <KeyThemesChart selectedStage={selectedStage} selectedAgeRange={selectedAgeRange} />
+          {keyThemes && keyThemes.length > 0 ? (
+            <KeyThemesChart data={keyThemes} />
+          ) : (
+            <p>No key themes data found for the selected filters.</p>
+          )}
         </div>
       </div>
     </div>

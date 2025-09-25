@@ -1,11 +1,14 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
 
-interface RequestOptions extends RequestInit {
+interface RequestOptions {
   params?: Record<string, string>;
+  body?: unknown;
+  headers?: Record<string, string>;
+  method?: string;
 }
 
 async function apiRequest<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-  const { params, headers, body, ...rest } = options || {};
+  const { params, headers, body, method } = options || {};
 
   const url = new URL(`${API_BASE_URL}${endpoint}`);
   if (params) {
@@ -13,13 +16,16 @@ async function apiRequest<T>(endpoint: string, options?: RequestOptions): Promis
   }
 
   const config: RequestInit = {
+    method,
     headers: {
       'Content-Type': 'application/json',
       ...headers,
     },
-    body: body ? JSON.stringify(body) : undefined,
-    ...rest,
   };
+
+  if (body) {
+    config.body = JSON.stringify(body);
+  }
 
   const response = await fetch(url.toString(), config);
 
@@ -32,13 +38,13 @@ async function apiRequest<T>(endpoint: string, options?: RequestOptions): Promis
 }
 
 export const api = {
-  get: <T>(endpoint: string, options?: RequestOptions) =>
+  get: <T>(endpoint: string, options?: Omit<RequestOptions, 'body'>) =>
     apiRequest<T>(endpoint, { method: 'GET', ...options }),
-  post: <T>(endpoint: string, data: any, options?: RequestOptions) =>
+  post: <T>(endpoint: string, data: unknown, options?: Omit<RequestOptions, 'body'>) =>
     apiRequest<T>(endpoint, { method: 'POST', body: data, ...options }),
-  put: <T>(endpoint: string, data: any, options?: RequestOptions) =>
+  put: <T>(endpoint: string, data: unknown, options?: Omit<RequestOptions, 'body'>) =>
     apiRequest<T>(endpoint, { method: 'PUT', body: data, ...options }),
-  delete: <T>(endpoint: string, options?: RequestOptions) =>
+  delete: <T>(endpoint: string, options?: Omit<RequestOptions, 'body'>) =>
     apiRequest<T>(endpoint, { method: 'DELETE', ...options }),
 };
 

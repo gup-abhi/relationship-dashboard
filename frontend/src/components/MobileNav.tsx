@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -18,11 +19,11 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
         </button>
         <nav>
           <ul>
-            <li><a href="/" className="block py-2 text-white">Overview</a></li>
-            <li><a href="/demographics" className="block py-2 text-white">Demographics</a></li>
-            <li><a href="/issues" className="block py-2 text-white">Issues & Themes</a></li>
-            <li><a href="/sentiment" className="block py-2 text-white">Sentiment Analysis</a></li>
-            <li><a href="/trends" className="block py-2 text-white">Trends</a></li>
+            <li><Link href="/" className="block py-2 text-white">Overview</Link></li>
+            <li><Link href="/demographics" className="block py-2 text-white">Demographics</Link></li>
+            <li><Link href="/issues" className="block py-2 text-white">Issues & Themes</Link></li>
+            <li><Link href="/sentiment" className="block py-2 text-white">Sentiment Analysis</Link></li>
+            <li><Link href="/trends" className="block py-2 text-white">Trends</Link></li>
           </ul>
         </nav>
       </div>

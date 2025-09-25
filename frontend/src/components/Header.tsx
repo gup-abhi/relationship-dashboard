@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import MobileNav from '@/components/MobileNav';
 
 const Header = () => {
@@ -15,11 +16,11 @@ const Header = () => {
       <h1 className="text-xl">Relationship Insights Dashboard</h1>
       <nav className="hidden md:flex space-x-4">
         <ul className="flex space-x-4">
-          <li><a href="/" className="block py-2">Overview</a></li>
-          <li><a href="/demographics" className="block py-2">Demographics</a></li>
-          <li><a href="/issues" className="block py-2">Issues & Themes</a></li>
-          <li><a href="/sentiment" className="block py-2">Sentiment Analysis</a></li>
-          <li><a href="/trends" className="block py-2">Trends</a></li>
+          <li><Link href="/" className="block py-2">Overview</Link></li>
+          <li><Link href="/demographics" className="block py-2">Demographics</Link></li>
+          <li><Link href="/issues" className="block py-2">Issues & Themes</Link></li>
+          <li><Link href="/sentiment" className="block py-2">Sentiment Analysis</Link></li>
+          <li><Link href="/trends" className="block py-2">Trends</Link></li>
         </ul>
       </nav>
       <div className="md:hidden">

@@ -170,7 +170,7 @@ const SentimentPage: React.FC = () => {
         <div className="bg-card p-4 shadow rounded-lg">
           <h2 className="text-xl font-semibold mb-2">Sentiment by Age Range</h2>
           {sentimentByAge && sentimentByAge.length > 0 ? (
-            <SentimentByDemographicsChart data={sentimentByAge} field1Name="Age Range" />
+            <SentimentByDemographicsChart data={sentimentByAge} />
           ) : (
             <p>No sentiment data available for this demographic.</p>
           )}
@@ -179,7 +179,7 @@ const SentimentPage: React.FC = () => {
         <div className="bg-card p-4 shadow rounded-lg">
           <h2 className="text-xl font-semibold mb-2">Sentiment by Relationship Stage</h2>
           {sentimentByStage && sentimentByStage.length > 0 ? (
-            <SentimentByDemographicsChart data={sentimentByStage} field1Name="Relationship Stage" />
+            <SentimentByDemographicsChart data={sentimentByStage} />
           ) : (
             <p>No sentiment data available for this demographic.</p>
           )}
