@@ -69,7 +69,7 @@ export default function Home() {
             </div>
             <div className="bg-card p-4 rounded-lg shadow">
               <p className="text-sm">Avg. Complexity Score</p>
-              <p className="text-3xl font-bold text-purple-600">{kpis.averageComplexity?.toFixed(2) || 'N/A'}</p>
+              <p className="text-3xl font-bold text-purple-600">{kpis.averageComplexity?.toFixed(2) || 'N/A'} / 10</p>
             </div>
           </div>
         </div>
