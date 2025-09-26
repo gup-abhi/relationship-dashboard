@@ -133,7 +133,28 @@ const getAverageComplexityScore = async (filters = {}) => {
 
 const getSentimentDistribution = async (filters = {}) => {
   try {
-    return await getPostsByField('post_sentiment', filters);
+    const match = buildMatchStage(filters);
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
+    }
+    pipeline.push(
+      {
+        $project: {
+          sentiments: { $split: ["$post_sentiment", "|"] }
+        }
+      },
+      { $unwind: "$sentiments" },
+      {
+        $group: {
+          _id: { $trim: { input: "$sentiments" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } }
+    );
+    const result = await Post.aggregate(pipeline);
+    return result;
   } catch (error) {
     throw new Error(`Error fetching sentiment distribution: ${error.message}`);
   }
