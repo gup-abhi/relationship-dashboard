@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api, fetchTopIssues, fetchRecentTrends } from '@/lib/api';
+import { api, fetchTopIssues, fetchPostsBySubreddit } from '@/lib/api';
 import BarChart from '@/components/TopIssuesChart'; // Reusing TopIssuesChart as a generic BarChart
-import RecentTrendsChart from '@/components/RecentTrendsChart';
+import PostsBySubredditChart from '@/components/PostsBySubredditChart';
 import SentimentDistributionChart from '@/components/SentimentDistributionChart';
 import { useLoader } from '@/components/LoaderProvider';
 
@@ -21,8 +21,8 @@ interface IssueData {
 }
 
 interface TrendData {
-  _id: string;
-  count: number;
+  date: string;
+  [subreddit: string]: number | string;
 }
 
 const fetchKpis = async (): Promise<KpiData> => {
@@ -34,20 +34,20 @@ export default function Home() {
   const { showLoader, hideLoader } = useLoader();
   const { data: kpis, isFetching: kpisFetching, isError: kpisError, error: kpisFetchError } = useQuery<KpiData>({ queryKey: ['kpis'], queryFn: fetchKpis });
   const { data: topIssues, isFetching: topIssuesFetching, isError: topIssuesError, error: topIssuesFetchError } = useQuery<{ topIssues: IssueData[] }>({ queryKey: ['topIssues'], queryFn: () => fetchTopIssues(5) });
-  const { data: recentTrends, isFetching: recentTrendsFetching, isError: recentTrendsError, error: recentTrendsFetchError } = useQuery<{ recentTrends: TrendData[] }>({ queryKey: ['recentTrends'], queryFn: () => fetchRecentTrends('month', 'created_date') });
+  const { data: postsBySubreddit, isFetching: postsBySubredditFetching, isError: postsBySubredditError, error: postsBySubredditFetchError } = useQuery<{ trends: TrendData[] }>({ queryKey: ['postsBySubreddit'], queryFn: () => fetchPostsBySubreddit('month', 'created_date') });
 
   useEffect(() => {
-    if (kpisFetching || topIssuesFetching || recentTrendsFetching) {
+    if (kpisFetching || topIssuesFetching || postsBySubredditFetching) {
       showLoader();
     } else {
       hideLoader();
     }
-  }, [kpisFetching, topIssuesFetching, recentTrendsFetching, showLoader, hideLoader]);
+  }, [kpisFetching, topIssuesFetching, postsBySubredditFetching, showLoader, hideLoader]);
 
-  if (kpisError || topIssuesError || recentTrendsError) {
+  if (kpisError || topIssuesError || postsBySubredditError) {
     return (
       <p className="text-red-500">
-        Error: {kpisFetchError?.message || topIssuesFetchError?.message || recentTrendsFetchError?.message || 'Failed to fetch data'}
+        Error: {kpisFetchError?.message || topIssuesFetchError?.message || postsBySubredditFetchError?.message || 'Failed to fetch data'}
       </p>
     );
   }
@@ -97,9 +97,9 @@ export default function Home() {
           </div>
 
           <div className="bg-card p-4 shadow rounded-lg">
-            <h2 className="text-xl font-semibold mb-2">Recent Trends (Posts per Month)</h2>
-            {recentTrends && recentTrends.recentTrends.length > 0 ? (
-              <RecentTrendsChart data={recentTrends.recentTrends} />
+            <h2 className="text-xl font-semibold mb-2">Posts by Subreddit (per Month)</h2>
+            {postsBySubreddit && postsBySubreddit.trends.length > 0 ? (
+              <PostsBySubredditChart data={postsBySubreddit.trends} />
             ) : (
               <p>No recent trends data available.</p>
             )}

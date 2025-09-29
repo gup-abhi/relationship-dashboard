@@ -15,6 +15,7 @@ import {
   getMostCommonIssuesDistributionController,
   getTopIssuesController,
   getRecentTrendsController,
+  getPostsBySubredditOverTimeController,
 } from '../controllers/overviewController.js';
 
 const router = express.Router();
@@ -66,5 +67,8 @@ router.get('/sentiment', getSentimentDistributionController);
 
 // GET /api/overview/recent-trends
 router.get('/recent-trends', getRecentTrendsController);
+
+// GET /api/overview/posts-by-subreddit
+router.get('/posts-by-subreddit', getPostsBySubredditOverTimeController);
 
 export default router;

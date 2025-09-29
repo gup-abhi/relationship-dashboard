@@ -309,6 +309,87 @@ const getSentimentTrendsOverTime = async (timeUnit = 'day', dateField = 'created
   }
 };
 
+const getPostsBySubredditOverTime = async (timeUnit = 'day', dateField = 'created_date', filters = {}) => {
+  try {
+    const match = buildMatchStage(filters);
+
+    // 1. Get top 5 subreddits
+    const topSubreddits = await getPostsByField('subreddit', filters);
+    const top5Subreddits = topSubreddits.slice(0, 5).map(s => s._id);
+
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
+    }
+
+    // 2. Filter by top 5 subreddits
+    pipeline.push({
+      $match: {
+        subreddit: { $in: top5Subreddits }
+      }
+    });
+
+    // 3. Group by time unit and subreddit
+    const groupStage = {
+      $group: {
+        _id: {
+          date: { $dateToString: { format: '%Y-%m', date: `$${dateField}` } },
+          subreddit: '$subreddit'
+        },
+        count: { $sum: 1 }
+      }
+    };
+
+    // 4. Pivot data
+    const pivotStage = {
+      $group: {
+        _id: '$_id.date',
+        subreddits: {
+          $push: {
+            k: '$_id.subreddit',
+            v: '$count'
+          }
+        }
+      }
+    };
+
+    const projectStage = {
+      $project: {
+        _id: 0,
+        date: '$_id',
+        ...top5Subreddits.reduce((acc, subreddit) => {
+          acc[subreddit] = {
+            $ifNull: [
+              {
+                $reduce: {
+                  input: '$subreddits',
+                  initialValue: null,
+                  in: {
+                    $cond: {
+                      if: { $eq: ['$$this.k', subreddit] },
+                      then: '$$this.v',
+                      else: '$$value'
+                    }
+                  }
+                }
+              },
+              0
+            ]
+          };
+          return acc;
+        }, {})
+      }
+    };
+
+    pipeline.push(groupStage, pivotStage, projectStage, { $sort: { date: 1 } });
+
+    const trends = await Post.aggregate(pipeline);
+    return trends;
+  } catch (error) {
+    throw new Error(`Error fetching posts by subreddit over time: ${error.message}`);
+  }
+};
+
 const getTrendingTopics = async (filters = {}) => {
   try {
     const match = buildMatchStage(filters);
@@ -350,5 +431,6 @@ export {
   getTopIssues,
   getRecentTrends,
   getSentimentTrendsOverTime,
+  getPostsBySubredditOverTime,
   getTrendingTopics,
 };

@@ -63,6 +63,9 @@ export const fetchTopIssues = (limit: number = 5, filters?: Record<string, strin
 export const fetchRecentTrends = (timeUnit: string = 'day', dateField: string = 'created_date', filters?: Record<string, string>) =>
   api.get<{ recentTrends: Array<{ _id: string; count: number }> }>('/overview/recent-trends', { params: { timeUnit, dateField, ...filters } });
 
+export const fetchPostsBySubreddit = (timeUnit: string = 'month', dateField: string = 'created_date', filters?: Record<string, string>) =>
+  api.get<{ trends: Array<{ date: string; [subreddit: string]: number | string }> }>('/overview/posts-by-subreddit', { params: { timeUnit, dateField, ...filters } });
+
 export const fetchTrendingTopics = (filters?: Record<string, string>) =>
   api.get<Array<{ _id: string; count: number }>>('/trends/topics', { params: filters });
 

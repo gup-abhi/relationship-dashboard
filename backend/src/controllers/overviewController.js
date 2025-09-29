@@ -6,6 +6,7 @@ import {
   getMostCommonIssuesDistribution,
   getTopIssues,
   getRecentTrends,
+  getPostsBySubredditOverTime,
 } from '../services/aggregationService.js';
 
 const getTotalPostsCount = async (req, res, next) => {
@@ -78,6 +79,16 @@ const getRecentTrendsController = async (req, res, next) => {
   }
 };
 
+const getPostsBySubredditOverTimeController = async (req, res, next) => {
+  try {
+    const { timeUnit, dateField, ...filters } = req.query;
+    const trends = await getPostsBySubredditOverTime(timeUnit, dateField, filters);
+    res.status(200).json({ trends });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   getTotalPostsCount,
   getMostCommonIssuesController,
@@ -86,4 +97,5 @@ export {
   getMostCommonIssuesDistributionController,
   getTopIssuesController,
   getRecentTrendsController,
+  getPostsBySubredditOverTimeController,
 };
