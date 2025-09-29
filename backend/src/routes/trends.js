@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { getPostVolumeTrends, getTrendingTopics } from '../controllers/trendsController.js';
+import { getPostVolumeTrends, getTrendingTopicsOverTime } from '../controllers/trendsController.js';
 
 // GET /api/trends/volume
 router.get('/volume', getPostVolumeTrends);
@@ -11,7 +11,7 @@ router.get('/seasonal', (req, res) => {
 });
 
 // GET /api/trends/topics
-router.get('/topics', getTrendingTopics);
+router.get('/topics', getTrendingTopicsOverTime);
 
 // GET /api/trends/predictions
 router.get('/predictions', (req, res) => {

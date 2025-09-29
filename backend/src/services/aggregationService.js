@@ -390,7 +390,7 @@ const getPostsBySubredditOverTime = async (timeUnit = 'day', dateField = 'create
   }
 };
 
-const getTrendingTopics = async (filters = {}) => {
+const getTrendingTopicsList = async (filters = {}) => {
   try {
     const match = buildMatchStage(filters);
     const pipeline = [];
@@ -411,12 +411,123 @@ const getTrendingTopics = async (filters = {}) => {
         }
       },
       { $sort: { count: -1 } },
-      { $limit: 10 }
+      { $limit: 5 }
     );
     const result = await Post.aggregate(pipeline);
     return result;
   } catch (error) {
     throw new Error(`Error fetching trending topics: ${error.message}`);
+  }
+};
+
+const getTrendingTopicsOverTime = async (timeUnit = 'day', dateField = 'created_date', filters = {}) => {
+  try {
+    const match = buildMatchStage(filters);
+
+    // 1. Get top 5 trending topics
+    const topTopics = await getTrendingTopicsList(filters);
+    const top5Topics = topTopics.map(t => t._id);
+
+    let groupFormat;
+    switch (timeUnit) {
+      case 'day':
+        groupFormat = '%Y-%m-%d';
+        break;
+      case 'month':
+        groupFormat = '%Y-%m';
+        break;
+      case 'year':
+        groupFormat = '%Y';
+        break;
+      default:
+        groupFormat = '%Y-%m-%d';
+    }
+
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
+    }
+
+    // 2. Unwind themes and filter by top 5
+    pipeline.push(
+      {
+        $project: {
+          date: `$${dateField}`,
+          themes: { $split: ['$key_themes', ';'] }
+        }
+      },
+      { $unwind: '$themes' },
+      {
+        $project: {
+          date: 1,
+          theme: { $trim: { input: '$themes' } }
+        }
+      },
+      {
+        $match: {
+          theme: { $in: top5Topics }
+        }
+      }
+    );
+
+    // 3. Group by time unit and theme
+    const groupStage = {
+      $group: {
+        _id: {
+          date: { $dateToString: { format: groupFormat, date: '$date' } },
+          theme: '$theme'
+        },
+        count: { $sum: 1 }
+      }
+    };
+
+    // 4. Pivot data
+    const pivotStage = {
+      $group: {
+        _id: '$_id.date',
+        themes: {
+          $push: {
+            k: '$_id.theme',
+            v: '$count'
+          }
+        }
+      }
+    };
+
+    const projectStage = {
+      $project: {
+        _id: 0,
+        date: '$_id',
+        ...top5Topics.reduce((acc, theme) => {
+          acc[theme] = {
+            $ifNull: [
+              {
+                $reduce: {
+                  input: '$themes',
+                  initialValue: null,
+                  in: {
+                    $cond: {
+                      if: { $eq: ['$$this.k', theme] },
+                      then: '$$this.v',
+                      else: '$$value'
+                    }
+                  }
+                }
+              },
+              0
+            ]
+          };
+          return acc;
+        }, {})
+      }
+    };
+
+    pipeline.push(groupStage, pivotStage, projectStage, { $sort: { date: 1 } });
+
+    const trends = await Post.aggregate(pipeline);
+    return trends;
+  } catch (error) {
+    throw new Error(`Error fetching trending topics over time: ${error.message}`);
   }
 };
 
@@ -432,5 +543,5 @@ export {
   getRecentTrends,
   getSentimentTrendsOverTime,
   getPostsBySubredditOverTime,
-  getTrendingTopics,
+  getTrendingTopicsOverTime as getTrendingTopics,
 };

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, fetchTrendingTopics, fetchPostVolume } from '@/lib/api';
 import PostVolumeTrendsChart from '@/components/PostVolumeTrendsChart';
 import TrendingTopicsChart from '@/components/TrendingTopicsChart';
 import {
@@ -21,18 +21,9 @@ interface PostVolumeData {
 }
 
 interface TrendingTopicsData {
-  _id: string; // Topic
-  count: number;
+  date: string;
+  [topic: string]: number | string;
 }
-
-const fetchPostVolume = async (filters?: Record<string, string>): Promise<PostVolumeData[]> => {
-  const params = { ...filters, timeUnit: 'month' };
-  return api.get('/trends/volume', { params });
-};
-
-const fetchTrendingTopics = async (filters?: Record<string, string>): Promise<TrendingTopicsData[]> => {
-  return api.get('/trends/topics', { params: filters });
-};
 
 const fetchUniqueValues = async (field: string): Promise<string[]> => {
   const response = await api.get<{ [key: string]: { _id: string }[] }>(`/demographics/${field}`);
@@ -43,15 +34,17 @@ const fetchUniqueValues = async (field: string): Promise<string[]> => {
 const TrendsPage: React.FC = () => {
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [selectedAgeRange, setSelectedAgeRange] = useState<string>('all');
+  const [commonTimeUnit, setCommonTimeUnit] = useState<string>('month');
   const { showLoader, hideLoader } = useLoader();
 
   const filters = {
     ...(selectedStage !== 'all' && { relationship_stage: selectedStage }),
     ...(selectedAgeRange !== 'all' && { age_range_op: selectedAgeRange }),
+    timeUnit: commonTimeUnit,
   };
 
   const { data: postVolume, isFetching: isFetchingPostVolume, isError: isErrorPostVolume } = useQuery<PostVolumeData[]>({ queryKey: ['postVolume', filters], queryFn: () => fetchPostVolume(filters) });
-  const { data: trendingTopics, isFetching: isFetchingTrendingTopics, isError: isErrorTrendingTopics } = useQuery<TrendingTopicsData[]>({ queryKey: ['trendingTopics', filters], queryFn: () => fetchTrendingTopics(filters) });
+  const { data: trendingTopics, isFetching: isFetchingTrendingTopics, isError: isErrorTrendingTopics } = useQuery<TrendingTopicsData[]>({ queryKey: ['trendingTopics', filters], queryFn: () => fetchTrendingTopics(commonTimeUnit, 'created_date', filters) });
 
 
   const { data: uniqueStages } = useQuery<string[]>({ queryKey: ['uniqueStages'], queryFn: () => fetchUniqueValues('relationship-stages') });
@@ -68,6 +61,7 @@ const TrendsPage: React.FC = () => {
   const handleClearFilters = () => {
     setSelectedStage('all');
     setSelectedAgeRange('all');
+    setCommonTimeUnit('month');
   };
 
   if (isErrorPostVolume || isErrorTrendingTopics) {
@@ -111,6 +105,20 @@ const TrendsPage: React.FC = () => {
           </Select>
         </div>
 
+        <div>
+          <label htmlFor="time-unit-select" className="block text-sm font-medium text-foreground">Time Unit:</label>
+          <Select onValueChange={setCommonTimeUnit} value={commonTimeUnit}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Select time unit" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="day">Day</SelectItem>
+              <SelectItem value="month">Month</SelectItem>
+              <SelectItem value="year">Year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Button onClick={handleClearFilters} className="self-end">Clear All Filters</Button>
       </div>
 
@@ -124,7 +132,7 @@ const TrendsPage: React.FC = () => {
       </div>
 
       <div className="bg-card p-4 shadow rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">Trending Topics</h2>
+        <h2 className="text-xl font-semibold mb-2">Trending Topics Over Time</h2>
         {trendingTopics && trendingTopics.length > 0 ? (
           <TrendingTopicsChart data={trendingTopics} />
         ) : (

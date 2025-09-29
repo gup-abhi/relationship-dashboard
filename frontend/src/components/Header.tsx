@@ -2,25 +2,37 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import MobileNav from '@/components/MobileNav';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const navLinks = [
+    { href: '/', label: 'Overview' },
+    { href: '/demographics', label: 'Demographics' },
+    { href: '/issues', label: 'Issues & Themes' },
+    { href: '/sentiment', label: 'Sentiment Analysis' },
+    { href: '/trends', label: 'Trends' },
+  ];
 
   return (
     <header className="bg-gray-800 text-white p-4 flex justify-between items-center">
       <h1 className="text-xl">Relationship Insights Dashboard</h1>
       <nav className="hidden md:flex space-x-4">
         <ul className="flex space-x-4">
-          <li><Link href="/" className="block py-2">Overview</Link></li>
-          <li><Link href="/demographics" className="block py-2">Demographics</Link></li>
-          <li><Link href="/issues" className="block py-2">Issues & Themes</Link></li>
-          <li><Link href="/sentiment" className="block py-2">Sentiment Analysis</Link></li>
-          <li><Link href="/trends" className="block py-2">Trends</Link></li>
+          {navLinks.map(link => (
+            <li key={link.href}>
+              <Link href={link.href} className={`block py-2 ${pathname === link.href ? 'text-blue-500' : ''}`}>
+                {link.label}
+              </Link>
+            </li>
+          ))}
         </ul>
       </nav>
       <div className="md:hidden">

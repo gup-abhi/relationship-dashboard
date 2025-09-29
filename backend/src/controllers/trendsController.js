@@ -1,4 +1,4 @@
-import { getRecentTrends, getTrendingTopics as getTopics } from '../services/aggregationService.js';
+import { getRecentTrends, getTrendingTopics } from '../services/aggregationService.js';
 
 export const getPostVolumeTrends = async (req, res) => {
   try {
@@ -11,9 +11,10 @@ export const getPostVolumeTrends = async (req, res) => {
   }
 };
 
-export const getTrendingTopics = async (req, res) => {
+export const getTrendingTopicsOverTime = async (req, res) => {
   try {
-    const topics = await getTopics(req.query);
+    const { timeUnit, dateField, ...filters } = req.query;
+    const topics = await getTrendingTopics(timeUnit, dateField, filters);
     res.json(topics);
   } catch (err) {
     console.error(err.message);
