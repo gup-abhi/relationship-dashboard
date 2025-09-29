@@ -213,6 +213,102 @@ const getRecentTrends = async (timeUnit = 'day', dateField = 'created_date', fil
   }
 };
 
+const getSentimentTrendsOverTime = async (timeUnit = 'day', dateField = 'created_date', filters = {}) => {
+  try {
+    const match = buildMatchStage(filters);
+
+    // 1. Get top 5 sentiments
+    const topSentiments = await getSentimentDistribution(filters);
+    const top5Sentiments = topSentiments.slice(0, 5).map(s => s._id);
+
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push(match);
+    }
+
+    // 2. Unwind sentiments and filter by top 5
+    pipeline.push(
+      {
+        $project: {
+          date: `$${dateField}`,
+          sentiments: { $split: ['$post_sentiment', '|'] }
+        }
+      },
+      { $unwind: '$sentiments' },
+      {
+        $project: {
+          date: 1,
+          sentiment: { $trim: { input: '$sentiments' } }
+        }
+      },
+      {
+        $match: {
+          sentiment: { $in: top5Sentiments }
+        }
+      }
+    );
+
+    // 3. Group by time unit and sentiment
+    const groupStage = {
+      $group: {
+        _id: {
+          date: { $dateToString: { format: '%Y-%m', date: '$date' } },
+          sentiment: '$sentiment'
+        },
+        count: { $sum: 1 }
+      }
+    };
+
+    // 4. Pivot data
+    const pivotStage = {
+      $group: {
+        _id: '$_id.date',
+        sentiments: {
+          $push: {
+            k: '$_id.sentiment',
+            v: '$count'
+          }
+        }
+      }
+    };
+
+    const projectStage = {
+      $project: {
+        _id: 0,
+        date: '$_id',
+        ...top5Sentiments.reduce((acc, sentiment) => {
+          acc[sentiment] = {
+            $ifNull: [
+              {
+                $reduce: {
+                  input: '$sentiments',
+                  initialValue: null,
+                  in: {
+                    $cond: {
+                      if: { $eq: ['$$this.k', sentiment] },
+                      then: '$$this.v',
+                      else: '$$value'
+                    }
+                  }
+                }
+              },
+              0
+            ]
+          };
+          return acc;
+        }, {})
+      }
+    };
+
+    pipeline.push(groupStage, pivotStage, projectStage, { $sort: { date: 1 } });
+
+    const trends = await Post.aggregate(pipeline);
+    return trends;
+  } catch (error) {
+    throw new Error(`Error fetching sentiment trends over time: ${error.message}`);
+  }
+};
+
 const getTrendingTopics = async (filters = {}) => {
   try {
     const match = buildMatchStage(filters);
@@ -253,5 +349,6 @@ export {
   getMostCommonIssuesDistribution,
   getTopIssues,
   getRecentTrends,
+  getSentimentTrendsOverTime,
   getTrendingTopics,
 };

@@ -1,4 +1,4 @@
-import { getRecentTrends, getCrossTabulation, getPostsByField, getSentimentDistribution as getSentimentDistributionService } from '../services/aggregationService.js';
+import { getSentimentTrendsOverTime, getCrossTabulation, getPostsByField, getSentimentDistribution as getSentimentDistributionService } from '../services/aggregationService.js';
 
 export const getSentimentDistribution = async (req, res) => {
   try {
@@ -14,7 +14,7 @@ export const getSentimentDistribution = async (req, res) => {
 export const getSentimentTrends = async (req, res) => {
   try {
     const { timeUnit, dateField, ...filters } = req.query;
-    const trends = await getRecentTrends(timeUnit, dateField, filters);
+    const trends = await getSentimentTrendsOverTime(timeUnit, dateField, filters);
     res.json(trends);
   } catch (err) {
     console.error(err.message);

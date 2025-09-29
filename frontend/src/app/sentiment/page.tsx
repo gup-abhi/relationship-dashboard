@@ -24,8 +24,8 @@ interface SentimentData {
 }
 
 interface SentimentTrendData {
-  _id: string; // Date
-  count: number;
+  date: string;
+  [sentiment: string]: number | string;
 }
 
 interface SentimentByDemographicsData {
