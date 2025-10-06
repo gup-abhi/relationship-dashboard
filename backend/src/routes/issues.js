@@ -7,8 +7,8 @@ import { buildMatchStage } from '../utils/filterBuilder.js';
 // GET /api/issues/primary
 router.get('/primary', async (req, res) => {
   try {
-    const { relationship_stage, age_range_op } = req.query;
-    const match = buildMatchStage({ relationship_stage, age_range_op });
+    const { relationship_stage, age_range_op, time_period } = req.query;
+    const match = buildMatchStage({ relationship_stage, age_range_op, time_period });
 
     const pipeline = [];
     if (Object.keys(match).length > 0) {
@@ -22,6 +22,7 @@ router.get('/primary', async (req, res) => {
       { $match: { issue_categories_array: { $ne: "" } } }, // Filter out empty strings after trim
       { $group: { _id: '$issue_categories_array', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
+      { $limit: 15 }
     );
 
     const primaryIssues = await Post.aggregate(pipeline);
@@ -35,15 +36,16 @@ router.get('/primary', async (req, res) => {
 // GET /api/issues/secondary
 router.get('/secondary', async (req, res) => {
   try {
-    const { relationship_stage, age_range_op } = req.query;
-    const match = buildMatchStage({ relationship_stage, age_range_op });
+    const { relationship_stage, age_range_op, time_period } = req.query;
+    const match = buildMatchStage({ relationship_stage, age_range_op, time_period });
 
     const pipeline = [];
     if (Object.keys(match).length > 0) {
       pipeline.push(match);
     }
     pipeline.push(
-      ...processMultiValueField('secondary_issues')
+      ...processMultiValueField('secondary_issues'),
+      { $limit: 15 }
     );
     const secondaryIssues = await Post.aggregate(pipeline);
     res.json(secondaryIssues);
@@ -56,8 +58,8 @@ router.get('/secondary', async (req, res) => {
 // GET /api/issues/red-flags
 router.get('/red-flags', async (req, res) => {
   try {
-    const { relationship_stage, age_range_op } = req.query;
-    const match = buildMatchStage({ relationship_stage, age_range_op });
+    const { relationship_stage, age_range_op, time_period } = req.query;
+    const match = buildMatchStage({ relationship_stage, age_range_op, time_period });
 
     const pipeline = [];
     if (Object.keys(match).length > 0) {
@@ -78,8 +80,8 @@ router.get('/red-flags', async (req, res) => {
 // GET /api/issues/positive-indicators
 router.get('/positive-indicators', async (req, res) => {
   try {
-    const { relationship_stage, age_range_op } = req.query;
-    const match = buildMatchStage({ relationship_stage, age_range_op });
+    const { relationship_stage, age_range_op, time_period } = req.query;
+    const match = buildMatchStage({ relationship_stage, age_range_op, time_period });
 
     const pipeline = [];
     if (Object.keys(match).length > 0) {
@@ -100,8 +102,8 @@ router.get('/positive-indicators', async (req, res) => {
 // GET /api/issues/themes
 router.get('/themes', async (req, res) => {
   try {
-    const { relationship_stage, age_range_op } = req.query;
-    const match = buildMatchStage({ relationship_stage, age_range_op });
+    const { relationship_stage, age_range_op, time_period } = req.query;
+    const match = buildMatchStage({ relationship_stage, age_range_op, time_period });
 
     const pipeline = [];
     if (Object.keys(match).length > 0) {
@@ -130,8 +132,8 @@ router.get('/themes', async (req, res) => {
 // GET /api/issues/complexity
 router.get('/complexity', async (req, res) => {
   try {
-    const { relationship_stage, age_range_op } = req.query;
-    const match = buildMatchStage({ relationship_stage, age_range_op });
+    const { relationship_stage, age_range_op, time_period } = req.query;
+    const match = buildMatchStage({ relationship_stage, age_range_op, time_period });
 
     const pipeline = [];
     if (Object.keys(match).length > 0) {

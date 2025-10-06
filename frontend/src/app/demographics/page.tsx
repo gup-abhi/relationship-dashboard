@@ -80,6 +80,7 @@ const DemographicsPage: React.FC = () => {
   const [selectedGender, setSelectedGender] = useState<string>('all');
   const [selectedRelationshipLength, setSelectedRelationshipLength] = useState<string>('all');
   const [selectedRelationshipStage, setSelectedRelationshipStage] = useState<string>('all');
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>('all');
   const { showLoader, hideLoader } = useLoader();
 
   const filters = {
@@ -87,6 +88,7 @@ const DemographicsPage: React.FC = () => {
     ...(selectedGender !== 'all' && { gender_op: selectedGender }),
     ...(selectedRelationshipLength !== 'all' && { relationship_length: selectedRelationshipLength }),
     ...(selectedRelationshipStage !== 'all' && { relationship_stage: selectedRelationshipStage }),
+    ...(selectedTimePeriod !== 'all' && { time_period: selectedTimePeriod }),
   };
 
   const { data: ageDistribution, isLoading: ageLoading, isError: ageError, error: ageFetchError } = useQuery<AgeDistributionData[]>({ queryKey: ['ageDistribution', filters], queryFn: () => fetchAgeDistribution(filters) });
@@ -114,6 +116,7 @@ const DemographicsPage: React.FC = () => {
     setSelectedGender('all');
     setSelectedRelationshipLength('all');
     setSelectedRelationshipStage('all');
+    setSelectedTimePeriod('all');
   };
 
   if (ageError || genderError || relationshipLengthError || relationshipStagesError || crossTabulationError) {
@@ -189,6 +192,22 @@ const DemographicsPage: React.FC = () => {
                   {stage === 'all' ? 'All Stages' : stage}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label htmlFor="time-period-select" className="block text-sm font-medium text-foreground">Filter by Time Period:</label>
+          <Select onValueChange={setSelectedTimePeriod} value={selectedTimePeriod}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select a time period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="last_24_hours">Last 24 hours</SelectItem>
+              <SelectItem value="last_7_days">Last 7 days</SelectItem>
+              <SelectItem value="last_30_days">Last 30 days</SelectItem>
+              <SelectItem value="last_12_months">Last 12 months</SelectItem>
             </SelectContent>
           </Select>
         </div>

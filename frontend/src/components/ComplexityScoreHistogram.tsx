@@ -11,15 +11,17 @@ interface ComplexityData {
 interface ComplexityScoreHistogramProps {
   relationshipStage?: string;
   ageRangeOp?: string;
+  timePeriod?: string;
 }
 
-const ComplexityScoreHistogram: React.FC<ComplexityScoreHistogramProps> = ({ relationshipStage, ageRangeOp }) => {
+const ComplexityScoreHistogram: React.FC<ComplexityScoreHistogramProps> = ({ relationshipStage, ageRangeOp, timePeriod }) => {
   const { data, error, isLoading } = useQuery<ComplexityData[]>({
-    queryKey: ['complexityDistribution', relationshipStage, ageRangeOp],
+    queryKey: ['complexityDistribution', relationshipStage, ageRangeOp, timePeriod],
     queryFn: async () => {
       const params = {
         ...(relationshipStage && { relationship_stage: relationshipStage }),
         ...(ageRangeOp && { age_range_op: ageRangeOp }),
+        ...(timePeriod && { time_period: timePeriod }),
       };
       const response = await axios.get('/api/issues/complexity', { params });
       return response.data;
@@ -28,6 +30,10 @@ const ComplexityScoreHistogram: React.FC<ComplexityScoreHistogramProps> = ({ rel
 
   if (isLoading) return <div>Loading complexity data...</div>;
   if (error) return <div>Error loading complexity data: {error.message}</div>;
+
+  if (!data || data.length === 0) {
+    return <p>No complexity score data available for the selected filters.</p>;
+  }
 
   return (
     <div className="h-[400px]">

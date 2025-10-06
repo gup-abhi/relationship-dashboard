@@ -25,11 +25,13 @@ interface Issue {
 const IssuesPage = () => {
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [selectedAgeRange, setSelectedAgeRange] = useState<string>('all');
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>('all');
   const { showLoader, hideLoader } = useLoader();
 
   const filters = {
     ...(selectedStage !== 'all' && { relationship_stage: selectedStage }),
     ...(selectedAgeRange !== 'all' && { age_range_op: selectedAgeRange }),
+    ...(selectedTimePeriod !== 'all' && { time_period: selectedTimePeriod }),
   };
 
   const { data: primaryIssues, isFetching: primaryIssuesFetching, isError: primaryIssuesError } = useQuery<Issue[]>({ queryKey: ['primaryIssues', filters], queryFn: () => fetchPrimaryIssues(filters) });
@@ -60,6 +62,7 @@ const IssuesPage = () => {
   const handleClearFilters = () => {
     setSelectedStage('all');
     setSelectedAgeRange('all');
+    setSelectedTimePeriod('all');
   };
 
   if (primaryIssuesError || secondaryIssuesError || redFlagsError || positiveIndicatorsError || keyThemesError) {
@@ -99,6 +102,22 @@ const IssuesPage = () => {
                   {range === 'all' ? 'All Age Ranges' : range}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label htmlFor="time-period-select" className="block text-sm font-medium text-foreground">Filter by Time Period:</label>
+          <Select onValueChange={setSelectedTimePeriod} value={selectedTimePeriod}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select a time period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="last_24_hours">Last 24 hours</SelectItem>
+              <SelectItem value="last_7_days">Last 7 days</SelectItem>
+              <SelectItem value="last_30_days">Last 30 days</SelectItem>
+              <SelectItem value="last_12_months">Last 12 months</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -145,7 +164,7 @@ const IssuesPage = () => {
 
         <div className="bg-card p-4 shadow rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-2">Complexity Score Distribution</h2>
-          <ComplexityScoreHistogram relationshipStage={selectedStage} ageRangeOp={selectedAgeRange} />
+          <ComplexityScoreHistogram relationshipStage={selectedStage} ageRangeOp={selectedAgeRange} timePeriod={selectedTimePeriod} />
         </div>
 
         <div className="bg-card p-4 shadow rounded-lg mb-6">
