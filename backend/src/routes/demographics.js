@@ -29,7 +29,7 @@ router.get('/gender', async (req, res, next) => {
 router.get('/relationship-stages', async (req, res, next) => {
   try {
     const filters = req.query;
-    const relationshipStagesDistribution = await getPostsByField('relationship_stage', filters);
+    const relationshipStagesDistribution = await getPostsByField('relationship_stage', filters, 10);
     res.status(200).json({ relationshipStagesDistribution });
   } catch (err) {
     next(err);

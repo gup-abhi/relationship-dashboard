@@ -6,7 +6,7 @@ import { api } from '@/lib/api';
 import AgeDistributionBarChart from '@/components/AgeDistributionBarChart';
 import GenderDistributionDonutChart from '@/components/GenderDistributionDonutChart';
 import RelationshipLengthStackedBarChart from '@/components/RelationshipLengthStackedBarChart';
-import RelationshipStagePieChart from '@/components/RelationshipStagePieChart';
+import RelationshipStageBarChart from '@/components/RelationshipStageBarChart';
 import CrossTabulationHeatmap from '@/components/CrossTabulationHeatmap';
 import {
   Select,
@@ -236,7 +236,7 @@ const DemographicsPage: React.FC = () => {
         <div className="bg-card p-4 shadow rounded-lg mb-6 col-span-full">
           <h2 className="text-xl font-semibold mb-2">Relationship Stage Distribution</h2>
           {relationshipStagesDistribution && relationshipStagesDistribution.length > 0 ? (
-            <RelationshipStagePieChart data={relationshipStagesDistribution} />
+            <RelationshipStageBarChart data={relationshipStagesDistribution} />
           ) : (
             <p>No relationship stage data available.</p>
           )}

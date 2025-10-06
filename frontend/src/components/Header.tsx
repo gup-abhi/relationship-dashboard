@@ -22,13 +22,13 @@ const Header = () => {
   ];
 
   return (
-    <header className="bg-gray-800 text-white p-4 flex justify-between items-center">
+    <header className="bg-primary text-primary-foreground p-4 flex justify-between items-center">
       <h1 className="text-xl">Relationship Insights Dashboard</h1>
       <nav className="hidden md:flex space-x-4">
         <ul className="flex space-x-4">
           {navLinks.map(link => (
             <li key={link.href}>
-              <Link href={link.href} className={`block py-2 ${pathname === link.href ? 'text-blue-500' : ''}`}>
+              <Link href={link.href} className={`block py-2 px-3 rounded-md ${pathname === link.href ? 'bg-accent-foreground text-accent' : ''}`}>
                 {link.label}
               </Link>
             </li>

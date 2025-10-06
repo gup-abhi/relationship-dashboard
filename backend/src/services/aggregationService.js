@@ -12,7 +12,7 @@ const getPostsCount = async (filters = {}) => {
   }
 };
 
-const getPostsByField = async (field, filters = {}) => {
+const getPostsByField = async (field, filters = {}, limit = null) => {
   try {
     const match = buildMatchStage(filters);
     const pipeline = [];
@@ -30,6 +30,9 @@ const getPostsByField = async (field, filters = {}) => {
         $sort: { count: -1 },
       },
     );
+    if (limit) {
+      pipeline.push({ $limit: limit });
+    }
     const result = await Post.aggregate(pipeline);
     return result;
   } catch (error) {
@@ -151,7 +154,8 @@ const getSentimentDistribution = async (filters = {}) => {
           count: { $sum: 1 }
         }
       },
-      { $sort: { count: -1 } }
+      { $sort: { count: -1 } },
+      { $limit: 10 }
     );
     const result = await Post.aggregate(pipeline);
     return result;

@@ -3,10 +3,11 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, fetchTopIssues, fetchPostsBySubreddit } from '@/lib/api';
-import BarChart from '@/components/TopIssuesChart'; // Reusing TopIssuesChart as a generic BarChart
+import BarChart from '@/components/TopIssuesChart';
 import PostsBySubredditChart from '@/components/PostsBySubredditChart';
 import SentimentDistributionChart from '@/components/SentimentDistributionChart';
 import { useLoader } from '@/components/LoaderProvider';
+import { Newspaper, MessageSquare, GitCommitHorizontal } from 'lucide-react';
 
 interface KpiData {
   totalPosts: number;
@@ -56,27 +57,36 @@ export default function Home() {
     <div>
       <h1 className="text-2xl font-bold mb-4">Overview</h1>
       {kpis && (
-        <div className="mb-6 p-4 bg-card rounded-lg shadow-md">
+        <div className="mb-6">
           <h2 className="text-xl font-semibold mb-3">Quick Insights</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div className="bg-card p-4 rounded-lg shadow">
-              <p className="text-sm">Total Posts</p>
-              <p className="text-3xl font-bold text-blue-600">{kpis.totalPosts}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-card p-4 rounded-lg border flex items-center">
+              <Newspaper className="w-8 h-8 mr-4 text-chart-1" />
+              <div>
+                <p className="text-sm text-muted-foreground">Total Posts</p>
+                <p className="text-3xl font-bold text-chart-1">{kpis.totalPosts}</p>
+              </div>
             </div>
-            <div className="bg-card p-4 rounded-lg shadow">
-              <p className="text-sm">Most Common Issue</p>
-              <p className="text-xl font-bold text-green-600">{kpis.mostCommonIssue?._id || 'N/A'}</p>
+            <div className="bg-card p-4 rounded-lg border flex items-center">
+              <MessageSquare className="w-8 h-8 mr-4 text-secondary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Most Common Issue</p>
+                <p className="text-xl font-bold text-secondary">{kpis.mostCommonIssue?._id || 'N/A'}</p>
+              </div>
             </div>
-            <div className="bg-card p-4 rounded-lg shadow">
-              <p className="text-sm">Avg. Complexity Score</p>
-              <p className="text-3xl font-bold text-purple-600">{kpis.averageComplexity?.toFixed(2) || 'N/A'} / 10</p>
+            <div className="bg-card p-4 rounded-lg border flex items-center">
+              <GitCommitHorizontal className="w-8 h-8 mr-4 text-chart-2" />
+              <div>
+                <p className="text-sm text-muted-foreground">Avg. Complexity Score</p>
+                <p className="text-3xl font-bold text-chart-2">{kpis.averageComplexity?.toFixed(2) || 'N/A'} / 10</p>
+              </div>
             </div>
           </div>
         </div>
       )}
       {kpis && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-card p-4 shadow rounded-lg col-span-full">
+          <div className="bg-card p-4 shadow rounded-lg col-span-full border">
             <h2 className="text-xl font-semibold mb-2">Sentiment Distribution</h2>
             {
               kpis.sentimentDistribution && kpis.sentimentDistribution.length > 0 ? (
